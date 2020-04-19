@@ -1,15 +1,8 @@
-
 #include "headers/common.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <stdio.h>
-#include <chrono>
-#include <vector>
-#include <iostream>
-#include <string.h>
-
+typedef std::vector<std::vector<Cell>> CellField;
+CellField cellField; //filled with cells, each cell has info for both 
+                      // velocity and pressure and any other things we want.
 const char *WINDOW_TITLE = "Liquid Dynamics";
 const double FRAME_RATE_MS = 1000.0 / 60.0;
 
@@ -191,3 +184,4 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 }
 
 //----------------------------------------------------------------------------
+// vector field . advection ...

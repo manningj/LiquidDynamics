@@ -5,12 +5,12 @@
 //navier stokes methods definitions.
 
 //these will not be void 4 long
-void advection();
-void diffusion();
-void addForces();
+extern void advection();
+extern void diffusion();
+extern void addForces();
 
-void computePressure();
-void subtractPressureGradient();
+extern void computePressure();
+extern void subtractPressureGradient();
 
 
 
