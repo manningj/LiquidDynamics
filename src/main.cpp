@@ -1,7 +1,7 @@
 // Based on: http://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SIXTH_EDITION/CODE/CHAPTER03/WINDOWS_VERSIONS/example2.cpp
 // Modified to isolate the main program and use GLM
 
- #include "headers/common.h"
+#include "headers/common.h"
 
 #include <iostream>
 
@@ -117,7 +117,7 @@ main( int argc, char **argv )
 #ifdef EXPERIMENTAL
    glewExperimental = GL_TRUE;
 #endif
-   
+
    glewInit();
 
    init();
