@@ -1,7 +1,7 @@
 //author: John Manning
 
-#ifndef NAVIERSTOKES
-#define NAVIERSTOKES
+#ifndef NAVIER_STOKES
+#define NAVIER_STOKES
 //navier stokes methods definitions.
 
 //these will not be void 4 long
