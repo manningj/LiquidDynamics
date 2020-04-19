@@ -13,6 +13,9 @@
 CC=clang++
 CFLAGS=-Wall -std=c++11 -g -DDEBUG -DEXPERIMENTAL
 
+CC=clang++
+CFLAGS=-Wall -std=c++11 -g -DDEBUG -DEXPERIMENTAL
+
 SRC=.
 OUT=../build
 GLM=../glm
@@ -20,13 +23,13 @@ GLM=../glm
 LIBS=-lGL -lglut -lGLEW
 INCLUDES=-I$(GLM)
 
-examples = $(notdir $(basename $(wildcard $(SRC)/assignment*)))
-sources = $(filter-out $(wildcard $(SRC)/assignment*),$(wildcard $(SRC)/*.cpp $(SRC)/*.c $(SRC)/*.C))
+examples = $(notdir $(basename $(wildcard $(SRC)/liquid*)))
+sources = $(filter-out $(wildcard $(SRC)/liquid*),$(wildcard $(SRC)/*.cpp $(SRC)/*.c $(SRC)/*.C))
 target_source := $(wildcard $(SRC)/$@.cpp $(SRC)/$@.c $(SRC)/$@.C)
 
 all: $(examples)
 
-assignment%:	$(wildcard $(SRC)/$@.cpp $(SRC)/$@.c $(SRC)/$@.C) $(sources) $(wildcard $(SRC)/*.hpp $(SRC)/*.h $(SRC)/*.H)
+liquid%:	$(wildcard $(SRC)/$@.cpp $(SRC)/$@.c $(SRC)/$@.C) $(sources) $(wildcard $(SRC)/*.hpp $(SRC)/*.h $(SRC)/*.H)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) $(wildcard $(SRC)/$@.cpp $(SRC)/$@.c $(SRC)/$@.C) $(sources) -o $(OUT)/$@
 
 clean:

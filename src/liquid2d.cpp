@@ -58,6 +58,7 @@ GLuint program, vPosition;
 
 // OpenGL initialization
 
+std::vector<point4> vertices;
 void init()
 {
    program = InitShader("shaders//vshader.glsl", "shaders//fshader.glsl");
@@ -129,7 +130,8 @@ void mouse(int button, int state, int x, int y)
       mousePressed = !mousePressed;
 
    }else if(button == GLUT_RIGHT_BUTTON && mousePressed){
-      removeCP();
+     
+      //do something
       mousePressed = !mousePressed;
    }
 }
@@ -160,12 +162,6 @@ void reshape(int width, int height)
 GLfloat mouseConvert(GLfloat mouseVal, GLfloat windowScale){
    return (mouseVal - windowScale/2) / (windowScale/2);
 }
-
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
 
 //rebinds VAO's
  void updateBuffers(){
