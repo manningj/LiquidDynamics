@@ -37,6 +37,6 @@ float divergence(CellField cellField, float v, int i, int j, int dx, int dy){
     return divergence;
 }
 
-void laplacian(){
+void laplacian(CellField cellField, int i, int j, int dx){
 
 }
