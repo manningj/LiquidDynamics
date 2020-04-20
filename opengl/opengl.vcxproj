@@ -15,20 +15,20 @@
     <ProjectGuid>{785A895C-DC4F-43E8-96D0-60250899BBCE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>COMP4490</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>opengl</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -88,17 +88,23 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\common.h" />
+    <ClInclude Include="..\src\headers\calculus.hpp" />
+    <ClInclude Include="..\src\headers\Cell.hpp" />
+    <ClInclude Include="..\src\headers\common.h" />
+    <ClInclude Include="..\src\headers\navierStokes.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\example0.cpp" />
+    <ClCompile Include="..\src\calculus.cpp" />
+    <ClCompile Include="..\src\Cell.cpp" />
+    <ClCompile Include="..\src\liquid2d.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\navierStokes.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\fshader.glsl" />
-    <None Include="..\src\vshader.glsl" />
+    <None Include="..\src\shaders\fshader.glsl" />
+    <None Include="..\src\shaders\vshader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

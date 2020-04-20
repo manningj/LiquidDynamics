@@ -1,6 +1,6 @@
 #include "headers/calculus.hpp"
 
-glm::vec2 gradient(const CellField cellField, int i, int j, int dx, int dy){
+//glm::vec2 gradient(const CellField cellField, int i, int j, int dx, int dy){
     //returns a vector of size 2 (3 if 3d). takes in a scalar field, 
     //and a reference to a cell in that scalar field, in form of i j.
     //we need to decide if we are doing a cell object or not.
@@ -16,7 +16,7 @@ glm::vec2 gradient(const CellField cellField, int i, int j, int dx, int dy){
                 dx                          dy    
     */
 
-}
+//}
 void divergence(){
 
 }
