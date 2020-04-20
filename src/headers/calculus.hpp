@@ -11,9 +11,9 @@ typedef std::vector<std::vector<Cell>> CellField;
 
 //these will not be void 4 long
 
-extern glm::vec2 gradient(const CellField cellField, int i, int j, int dx, int dy);
-extern void divergence();
-extern void laplacian();
+extern glm::vec2 gradient(CellField cellField, int i, int j, int dx, int dy);
+extern float divergence(CellField cellField, float v, int i, int j, int dx, int dy);
+extern void laplacian(CellField cellField, int i, int j, int dx);
 
 
 #endif
