@@ -1,8 +1,5 @@
-#include "headers/common.h"
+#include "common.h"
 
-typedef std::vector<std::vector<Cell>> CellField;
-CellField cellField; //filled with cells, each cell has info for both 
-                      // velocity and pressure and any other things we want.
 const char *WINDOW_TITLE = "Liquid Dynamics";
 const double FRAME_RATE_MS = 1000.0 / 60.0;
 
@@ -54,7 +51,7 @@ GLuint program, vPosition;
 std::vector<point4> vertices;
 void init()
 {
-   program = InitShader("shaders//vshader.glsl", "shaders//fshader.glsl");
+   program = InitShader("vshader.glsl", "fshader.glsl");
    glUseProgram(program);
 
    vPosition = glGetAttribLocation(program, "vPosition");

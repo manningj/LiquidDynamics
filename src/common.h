@@ -19,9 +19,6 @@
 // Define a helpful macro for handling offsets into buffer objects
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
-
-
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -30,12 +27,6 @@
 #include <vector>
 #include <iostream>
 #include <string.h>
-
-#include "calculus.hpp"
-#include "navierStokes.hpp"
-#include "Cell.hpp"
-
-
 
 extern GLuint InitShader(const char* vShaderFile, const char* fShaderFile);
 
@@ -51,5 +42,32 @@ extern void keyboard(unsigned char key, int x, int y);
 extern void mouse(int button, int state, int x, int y);
 extern void reshape(int width, int height);
 
+
+typedef struct field_struct {
+    GLuint fbo;
+    GLuint texture;
+} Field;
+
+typedef struct pair_struct {
+    Field foo;
+    Field bar;
+} Pair;
+
+typedef struct shaders_struct {
+    GLuint advect;
+    GLuint diffusion;
+    //more items here eventually
+} Shaders;
+
+// utilities.cpp
+void initShaders(Shaders * shaders);
+Field createField();
+Pair createPair();
+void clearField(Field field);
+void swapField(Pair * fieldPair);
+
+// liquid.cpp
+// Function for every item in shader struct (to calculate)
+// Will likely be in liquid2d.cpp
 
 #endif

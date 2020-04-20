@@ -88,23 +88,18 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\headers\calculus.hpp" />
-    <ClInclude Include="..\src\headers\Cell.hpp" />
-    <ClInclude Include="..\src\headers\common.h" />
-    <ClInclude Include="..\src\headers\navierStokes.hpp" />
+    <ClInclude Include="..\src\common.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\calculus.cpp" />
-    <ClCompile Include="..\src\Cell.cpp" />
     <ClCompile Include="..\src\liquid2d.cpp" />
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\navierStokes.cpp" />
+    <ClCompile Include="..\src\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\shaders\fshader.glsl" />
-    <None Include="..\src\shaders\vshader.glsl" />
+    <None Include="..\src\fshader.glsl" />
+    <None Include="..\src\vshader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
