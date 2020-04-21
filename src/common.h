@@ -55,7 +55,11 @@ typedef struct pair_struct {
 
 typedef struct shaders_struct {
     GLuint advect;
-    GLuint diffusion;
+    GLuint diffuse;
+    GLuint jacobi;
+    GLuint addForces;
+    GLuint computePressure;
+    GLuint subtractPressureGradient;
     //more items here eventually
 } Shaders;
 
