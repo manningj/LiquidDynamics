@@ -1,0 +1,37 @@
+# For Linux (Ubuntu)
+#
+# Dependencies:
+#  apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev libglew-dev
+# (and clang too, or change CC to g++)
+#
+# On my system -DEXPERIMENTAL needs to be set for glew to expose "modern"
+# OpenGL features. YMMV. Note that this also requires an updated main.cpp
+#
+# Must run make from the src directory, and run the executables there too; e.g.
+#  ../build/example1
+
+CC=clang++
+CFLAGS=-Wall -std=c++11 -g -DDEBUG -DEXPERIMENTAL
+
+CC=clang++
+CFLAGS=-Wall -std=c++11 -g -DDEBUG -DEXPERIMENTAL
+
+SRC=.
+OUT=../build
+GLM=../glm
+
+LIBS=-lGL -lglut -lGLEW
+INCLUDES=-I$(GLM)
+
+examples = $(notdir $(basename $(wildcard $(SRC)/liquid*)))
+sources = $(filter-out $(wildcard $(SRC)/liquid*),$(wildcard $(SRC)/*.cpp $(SRC)/*.c $(SRC)/*.C))
+target_source := $(wildcard $(SRC)/$@.cpp $(SRC)/$@.c $(SRC)/$@.C)
+
+all: $(examples)
+
+liquid%:	$(wildcard $(SRC)/$@.cpp $(SRC)/$@.c $(SRC)/$@.C) $(sources) $(wildcard $(SRC)/*.hpp $(SRC)/*.h $(SRC)/*.H)
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) $(wildcard $(SRC)/$@.cpp $(SRC)/$@.c $(SRC)/$@.C) $(sources) -o $(OUT)/$@
+
+clean:
+	rm -f $(addprefix $(OUT)/,$(examples))
+	rm -rf $(addsuffix .dSYM,$(addprefix $(OUT)/,$(examples)))
