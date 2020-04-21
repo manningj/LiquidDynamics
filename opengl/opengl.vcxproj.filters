@@ -49,5 +49,8 @@
     <None Include="..\src\advect.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\src\drawTexture.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

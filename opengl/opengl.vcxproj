@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\advect.glsl" />
+    <None Include="..\src\drawTexture.glsl" />
     <None Include="..\src\fshader.glsl" />
     <None Include="..\src\vshader.glsl" />
   </ItemGroup>

@@ -40,6 +40,7 @@ extern void update(void);
 extern void display(void);
 extern void keyboard(unsigned char key, int x, int y);
 extern void mouse(int button, int state, int x, int y);
+extern void mouseDrag(int x, int y);
 extern void reshape(int width, int height);
 
 
