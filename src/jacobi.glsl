@@ -17,13 +17,12 @@ uniform sampler2D b;// b vector, Ax = b
 
 
 void main(){
-    ivec2 fragCoord = ivec2(gl_fragCoord.xy);
+    ivec2 fragCoord = ivec2(gl_FragCoord.xy);
     //get left, right, bottom, top samples.
     vec4 top = texelFetchOffset(x, fragCoord, 0, ivec2(0, 1));
     vec4 bot = texelFetchOffset(x, fragCoord, 0, ivec2(0, -1));
     vec4 right = texelFetchOffset(x, fragCoord, 0, ivec2(1, 0));
     vec4 left = texelFetchOffset(x, fragCoord, 0, ivec2(-1, 0));
-    
 
     //get center of b sample
     vec4 bC = texelFetch(b, fragCoord, 0);
