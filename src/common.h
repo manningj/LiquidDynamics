@@ -57,9 +57,8 @@ typedef struct shaders_struct {
     GLuint advect;
     GLuint diffuse;
     GLuint jacobi;
-    GLuint addForces;
-    GLuint computePressure;
-    GLuint subtractPressureGradient;
+    GLuint divergence;
+    GLuint subtractGradient;
     //more items here eventually
 } Shaders;
 
@@ -76,9 +75,9 @@ void unbind();
 
 
 void advect(Field velocity, Field pressure, Field destination);
-void subtractGradient();
-void divergence();
-void jacobi(Field xField, Field bField, Field destination);
+void subtractGradient(Field velocity, Field pressure, Field destination);
+void divergence(Field velocityField, Field destination);
+void jacobi(Field xField, Field bField, Field destination,float alphaParameter, float betaParameter);
 void vertex();
 
 

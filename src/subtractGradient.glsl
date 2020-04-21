@@ -2,8 +2,8 @@
 
 out vec2 fragOut;
 
-uniform sampler2D pressure;
 uniform sampler2D velocity;
+uniform sampler2D pressure;
 
 uniform float gradScale; // 0.5/ gridscale
 
@@ -29,4 +29,9 @@ void main(){
 
     fragOut = (veloMask * newVelo);
 
+}
+
+void divergence(Field velocityField, Field destination){
+
+    
 }

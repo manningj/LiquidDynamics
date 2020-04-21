@@ -4,6 +4,11 @@ out vec4 xNew; //result
 
 uniform float alpha; 
 uniform float rBeta;
+
+uniform sampler2D x;// x vector, Ax = b
+uniform sampler2D b;// b vector, Ax = b
+
+
 //for pressure, alpha = -(dx^2)
 //              rbeta = 1/4
 //              x = pressure
@@ -12,9 +17,6 @@ uniform float rBeta;
 //              rbeta = 1/(4 + dx^2 /v*dt)
 //              x = velocity
 //              d = velocity
-uniform sampler2D x;// x vector, Ax = b
-uniform sampler2D b;// b vector, Ax = b
-
 
 void main(){
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);

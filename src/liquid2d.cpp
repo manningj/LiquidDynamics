@@ -47,7 +47,7 @@ GLuint program, vPosition;
 
 Shaders* shaders;
 
-float dt;
+float dt, dx, dy;
 //----------------------------------------------------------------------------
 
 // OpenGL initialization
@@ -239,40 +239,116 @@ void advect(Field velocity, Field position, Field destination){
    unbind();
 }
 
+void jacobi(Field xField, Field bField, Field destination, float alphaParameter, float betaParameter){
 
-//for pressure, alpha = -(dx^2)
-//              rbeta = 1/4
-//              x = pressure
-//              b = divergence
-//for diffusion, alpha = dx^2 /v*dt 
-//              rbeta = 1/(4 + dx^2 /v*dt)
-//              x = velocity
-//              d = velocity
+   /*this gets called a number of times in a loop. 
+      used for poisson pressure,
+         and for  viscous diffusion.
 
 
-void jacobi(Field xField, Field bField, Field destination){
-   //this gets called a number of times in a loop. 
-   //used for poisson pressure,
-   //and for  viscous diffusion.
+   for pressure, alpha = -(dx^2)
+                rbeta = 1/4
+                x = pressure
+                b = divergence
 
-
-   //for pressure, alpha = -(dx^2)
-   //              rbeta = 1/4
-   //              x = pressure
-   //              b = divergence
-   //for diffusion, alpha = dx^2 /v*dt 
-   //              rbeta = 1/(4 + dx^2 /v*dt)
-   //              x = velocity
-   //              d = velocity
+   for diffusion, alpha = dx^2 /v*dt 
+                rbeta = 1/(4 + dx^2 /v*dt)
+                x = velocity
+                d = velocity
+   */
 
    GLuint shaderHandle = shaders->jacobi;
 
    glUseProgram(shaderHandle);
 
-   glGetUniformLocation(shaderHandle, "alpha");
+   GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
+   GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
 
-   glGetUniformLocation(shaderHandle, "rBeta");
+   GLuint x = glGetUniformLocation(shaderHandle, "x");
+   GLuint b = glGetUniformLocation(shaderHandle, "b");
+
+   glUniform1f(alpha, alphaParameter);
+   glUniform1f(rBeta, 1/betaParameter);
+   glUniform1i(b, 1);
 
 
+    //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+   //set texture 0 to be the x field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, xField.texture);
+
+   //set texture one to be the b texture
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, bField.texture);
+   //obstacles stuff here
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
+}
+
+
+void subtractGradient(Field velocityField, Field pressureField, Field destination){
+
+   GLuint shaderHandle = shaders->subtractGradient;
+
+   glUseProgram(shaderHandle);
+
+   GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
+   GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
+   GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
+
+
+   glUniform1f(gradScale, 1/windowWidth);
+   glUniform1i(pressure, 1);
+
+   
+
+    //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+   //set texture 0 to be the velocity field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, velocityField.texture);
+
+   //set texture one to be the pressure field texture
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, pressureField.texture);
+   //obstacles stuff here
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
 
 }
+
+void divergence(Field velocityField, Field destination){
+   GLuint shaderHandle = shaders->divergence;
+   glUseProgram(shaderHandle);
+
+   GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
+   GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
+
+
+   glUniform1f(halfrdx, 0.5f/dx);
+
+   //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+   //set texture 0 to be the velocity field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, velocityField.texture);
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
+
+
+    
+}
+
