@@ -29,9 +29,6 @@ const GLfloat Z_NEAR = -1.0f;
 const GLfloat Z_FAR  = 1.0f;
 //boolean used for double clicking
 bool mousePressed = false;
-//window sizes
-GLfloat windowWidth = 640.0f;
-GLfloat windowHeight= 640.0f;
 
 const color4 clearColour = color4(0,0,0,1); //black backround
 //--------------------------------------------------------------------
@@ -47,7 +44,13 @@ GLuint program, vPosition;
 
 Shaders* shaders;
 
-float dt, dx, dy;
+
+float viscosity;
+const float dt;
+Pair Velocity, Pressure, Density;
+Field Divergence;
+
+GLuint Display;
 //----------------------------------------------------------------------------
 
 // OpenGL initialization
@@ -144,8 +147,7 @@ void update(void)
 void reshape(int width, int height)
 {
    glViewport(0, 0, width, height);
-   windowHeight = height;
-   windowWidth = width;
+   
   
    glm::mat4 projection = glm::ortho(LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
    
@@ -186,6 +188,18 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 
 //----------------------------------------------------------------------------
 // vector field . advection ...
+void runtime(){
+
+}
+void initFields(){
+
+   Velocity = createPair(windowWidth, windowHeight);
+   Pressure = createPair(windowWidth, windowHeight);
+
+   Divergence = createField(windowWidth, windowHeight);
+   initShaders(shaders);
+   Display = InitShader("vshader.glsl", "fshader.glsl");
+}
 
 void unbind(){
 
@@ -218,7 +232,7 @@ void advect(Field velocity, Field position, Field destination){
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
 
 
-   glUniform2f(rdx, 1.0f / windowWidth, 1.0f / windowHeight); // rdx is 1/dx and dy
+   glUniform2f(rdx, 1.0f / cellSize, 1.0f / cellSize); // rdx is 1/dx and dy
    glUniform1f(timeStep, dt);
    glUniform1i(posTex, 1); // texture 1, a sampler2D.
    
@@ -302,7 +316,7 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
 
 
-   glUniform1f(gradScale, 1/windowWidth);
+   glUniform1f(gradScale, 1/fieldWidth);
    glUniform1i(pressure, 1);
 
    
@@ -334,7 +348,7 @@ void divergence(Field velocityField, Field destination){
    GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
 
 
-   glUniform1f(halfrdx, 0.5f/dx);
+   glUniform1f(halfrdx, 0.5f/cellSize);
 
    //bindframe buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
