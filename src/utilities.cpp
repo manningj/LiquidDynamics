@@ -1,7 +1,11 @@
 #include "common.h"
 
 void initShaders(Shaders* shaders) {
-	//shaders->advection = InitShader("shaders//vshader.glsl", "shaders//fshader.avection.glsl");
+	shaders->advect = InitShader("vshader.glsl", "advection.glsl");
+	shaders->diffuse = InitShader("vshader.glsl", "diffuse.glsl");
+	shaders->divergence = InitShader("vshader.glsl", "divergence.glsl");
+	shaders->jacobi = InitShader("vshader.glsl", "jacobi.glsl");
+	shaders->subtractGradient = InitShader("vshader.glsl", "subtractGradient.glsl");
 }
 
 Field createField(GLint width, GLint height) {
