@@ -30,8 +30,8 @@ const GLfloat Z_FAR  = 1.0f;
 //boolean used for double clicking
 bool mousePressed = false;
 //window sizes
-GLfloat windowWidth = 640.0f;
-GLfloat windowHeight= 640.0f;
+GLint windowWidth = 640;
+GLint windowHeight= 640;
 
 const color4 clearColour = color4(0,0,0,1); //black backround
 //--------------------------------------------------------------------
@@ -57,7 +57,6 @@ void init()
    vPosition = glGetAttribLocation(program, "vPosition");
    
    glGenVertexArrays(2, VAOs);
-
 
    updateBuffers();
    Projection = glGetUniformLocation(program, "Projection");

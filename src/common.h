@@ -60,11 +60,11 @@ typedef struct shaders_struct {
 } Shaders;
 
 // utilities.cpp
-void initShaders(Shaders * shaders);
-Field createField();
-Pair createPair();
-void clearField(Field field);
-void swapField(Pair * fieldPair);
+void initShaders(Shaders* shaders);
+Field createField(GLint width, GLint height);
+Pair createPair(int width, int height);
+void clearField(Field field, float clearColor);
+void swapField(Pair* fieldPair);
 
 // liquid.cpp
 // Function for every item in shader struct (to calculate)
