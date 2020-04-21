@@ -44,6 +44,10 @@ GLuint Projection, Colour;
 GLuint VAOs[2];
 GLuint buffers[2];
 GLuint program, vPosition;
+
+Shaders* shaders;
+
+float dt;
 //----------------------------------------------------------------------------
 
 // OpenGL initialization
@@ -182,3 +186,93 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 
 //----------------------------------------------------------------------------
 // vector field . advection ...
+
+void unbind(){
+
+   //after each call to a shader program, 
+   //we should remove the shader specific bindings.
+   //we do this by bindining them to "0";
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, 0); //unbind tex2
+   
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex1
+
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, 0); //unbind tex0
+
+   glBindFramebuffer(GL_FRAMEBUFFER,0); //unbind framebuffer
+   glDisable(GL_BLEND);
+
+
+}
+void advect(Field velocity, Field position, Field destination){
+   
+   GLuint shaderHandle = shaders->advect;
+
+   glUseProgram(shaderHandle);
+
+   GLuint rdx = glGetUniformLocation(shaderHandle, "rdx");
+   GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
+   GLuint veloTex = glGetUniformLocation(shaderHandle, "veloTex");
+   GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
+
+
+   glUniform2f(rdx, 1.0f / windowWidth, 1.0f / windowHeight); // rdx is 1/dx and dy
+   glUniform1f(timeStep, dt);
+   glUniform1i(posTex, 1); // texture 1, a sampler2D.
+   
+   //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   //set texture 0 to be the velocity field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, velocity.texture);
+
+   //set texture one to be the position texture
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, position.texture);
+   //obstacles stuff here
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
+}
+
+
+//for pressure, alpha = -(dx^2)
+//              rbeta = 1/4
+//              x = pressure
+//              b = divergence
+//for diffusion, alpha = dx^2 /v*dt 
+//              rbeta = 1/(4 + dx^2 /v*dt)
+//              x = velocity
+//              d = velocity
+
+
+void jacobi(Field xField, Field bField, Field destination){
+   //this gets called a number of times in a loop. 
+   //used for poisson pressure,
+   //and for  viscous diffusion.
+
+
+   //for pressure, alpha = -(dx^2)
+   //              rbeta = 1/4
+   //              x = pressure
+   //              b = divergence
+   //for diffusion, alpha = dx^2 /v*dt 
+   //              rbeta = 1/(4 + dx^2 /v*dt)
+   //              x = velocity
+   //              d = velocity
+
+   GLuint shaderHandle = shaders->jacobi;
+
+   glUseProgram(shaderHandle);
+
+   glGetUniformLocation(shaderHandle, "alpha");
+
+   glGetUniformLocation(shaderHandle, "rBeta");
+
+
+
+}

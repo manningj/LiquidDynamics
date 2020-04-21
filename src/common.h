@@ -69,9 +69,17 @@ Field createField(GLint width, GLint height);
 Pair createPair(int width, int height);
 void clearField(Field field, float clearColor);
 void swapField(Pair* fieldPair);
-
+void unbind();
 // liquid.cpp
 // Function for every item in shader struct (to calculate)
 // Will likely be in liquid2d.cpp
+
+
+void advect(Field velocity, Field pressure, Field destination);
+void subtractGradient();
+void divergence();
+void jacobi(Field xField, Field bField, Field destination);
+void vertex();
+
 
 #endif

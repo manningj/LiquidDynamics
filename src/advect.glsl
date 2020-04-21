@@ -2,7 +2,7 @@
 
 out vec4 newX; //the advected position
 
-uniform vex2 rdx; // {1/width, 1/height}
+uniform vec2 rdx; // {1/width, 1/height}
 uniform float timeStep; //dt
 uniform sampler2D veloTex; //velocity texture
 uniform sampler2D posTex;// position texture.
