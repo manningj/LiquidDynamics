@@ -36,23 +36,15 @@ GLint windowHeight= 640;
 const color4 clearColour = color4(0,0,0,1); //black background
 //--------------------------------------------------------------------
 
-//point4 vertices0[6] = {
-//  point4(-1.0,  1.0,  0.0, 1.0),
-//  point4(-1.0, -1.0,  0.0, 1.0),
-//  point4(1.0, -1.0,  0.0, 1.0),
-//  point4(-1.0,  1.0, 0.0, 1.0),
-//  point4(1.0, -1.0,  0.0, 1.0),
-//  point4(1.0,  1.0,  0.0, 1.0)
-//};
-
 point4 vertices[6] = {
-    point4(-0.5,  0.5,  0.0, 1.0),
-    point4(-0.5, -0.5,  0.0, 1.0),
-    point4(0.5, -0.5,  0.0, 1.0),
-    point4(-0.5,  0.5,  0.0, 1.0),
-    point4(0.5, -0.5,  0.0, 1.0),
-    point4(0.5,  0.5,  0.0, 1.0)
+  point4(-1.0,  1.0,  0.0, 1.0),
+  point4(-1.0, -1.0,  0.0, 1.0),
+  point4(1.0, -1.0,  0.0, 1.0),
+  point4(-1.0,  1.0, 0.0, 1.0),
+  point4(1.0, -1.0,  0.0, 1.0),
+  point4(1.0,  1.0,  0.0, 1.0)
 };
+
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
@@ -61,6 +53,9 @@ GLuint Projection, Colour;
 GLuint VAO;
 GLuint buffer;
 GLuint program, vPosition;
+GLuint liquidColor;
+Pair temp;
+
 //----------------------------------------------------------------------------
 
 // OpenGL initialization
@@ -74,9 +69,19 @@ void init()
    
    glGenVertexArrays(1, &VAO);
 
+   printf("%d\n", VAO);
+
    updateBuffer();
+
+   printf("%d\n", buffer);
+   printf("%d\n", vPosition);
+
    Projection = glGetUniformLocation(program, "Projection");
    Colour =glGetUniformLocation(program, "colour");
+
+   temp = createPair(windowWidth, windowHeight);
+   clearField(temp.foo, 0.2);
+   clearField(temp.bar, 0.8);
 
    glEnable(GL_DEPTH_TEST);
 
@@ -90,8 +95,10 @@ void display(void)
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    //draw methods here
-
-
+   //glBindTexture(GL_TEXTURE_2D, temp.foo.texture);
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+   glBindVertexArray(VAO);
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
    glDrawArrays(GL_TRIANGLES, 0, 6);
 
    glutSwapBuffers();
@@ -182,7 +189,7 @@ GLfloat mouseConvert(int mouseVal, int windowScale){
          // Bind VBO to VAO
          glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
-         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), NULL, GL_STATIC_DRAW);
+         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
          // Set vPosition vertex attibute for shader(s)
          glEnableVertexAttribArray(vPosition);
          glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
