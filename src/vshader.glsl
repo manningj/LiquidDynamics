@@ -4,12 +4,11 @@ in vec4 vPosition;
 uniform float Time; // in milliseconds
 uniform mat4 ModelView, Projection;
 out vec4 f_colour;
-uniform vec4 colour;
+
 void main()
 {
-  vec4  v = vPosition;
-  f_colour = colour;
-  gl_Position =  v;
+  gl_Position = vPosition;
+  f_colour = vec4(0.2,1.0,0.5,1);
 }
 
 

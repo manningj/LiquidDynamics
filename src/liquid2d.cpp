@@ -15,8 +15,8 @@ typedef glm::vec2 point2; // name vec4 as point4 for clarity
 
 //-------------------------------------------------------------------
                      //function prototypes
-float mouseConvert(float mouseVal, float windowScale);
-void updateBuffers();
+float mouseConvert(int mouseVal, int windowScale);
+void updateBuffer();
 bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 //-------------------------------------------------------------------
 
@@ -33,22 +33,38 @@ bool mousePressed = false;
 GLint windowWidth = 640;
 GLint windowHeight= 640;
 
-const color4 clearColour = color4(0,0,0,1); //black backround
+const color4 clearColour = color4(0,0,0,1); //black background
 //--------------------------------------------------------------------
 
+//point4 vertices0[6] = {
+//  point4(-1.0,  1.0,  0.0, 1.0),
+//  point4(-1.0, -1.0,  0.0, 1.0),
+//  point4(1.0, -1.0,  0.0, 1.0),
+//  point4(-1.0,  1.0, 0.0, 1.0),
+//  point4(1.0, -1.0,  0.0, 1.0),
+//  point4(1.0,  1.0,  0.0, 1.0)
+//};
+
+point4 vertices[6] = {
+    point4(-0.5,  0.5,  0.0, 1.0),
+    point4(-0.5, -0.5,  0.0, 1.0),
+    point4(0.5, -0.5,  0.0, 1.0),
+    point4(-0.5,  0.5,  0.0, 1.0),
+    point4(0.5, -0.5,  0.0, 1.0),
+    point4(0.5,  0.5,  0.0, 1.0)
+};
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
 
 GLuint Projection, Colour;
-GLuint VAOs[2];
-GLuint buffers[2];
+GLuint VAO;
+GLuint buffer;
 GLuint program, vPosition;
 //----------------------------------------------------------------------------
 
 // OpenGL initialization
 
-std::vector<point4> vertices;
 void init()
 {
    program = InitShader("vshader.glsl", "fshader.glsl");
@@ -56,9 +72,9 @@ void init()
 
    vPosition = glGetAttribLocation(program, "vPosition");
    
-   glGenVertexArrays(2, VAOs);
+   glGenVertexArrays(1, &VAO);
 
-   updateBuffers();
+   updateBuffer();
    Projection = glGetUniformLocation(program, "Projection");
    Colour =glGetUniformLocation(program, "colour");
 
@@ -74,6 +90,9 @@ void display(void)
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    //draw methods here
+
+
+   glDrawArrays(GL_TRIANGLES, 0, 6);
 
    glutSwapBuffers();
 }
@@ -148,25 +167,23 @@ void reshape(int width, int height)
 }
 //----------------------------------------------------------------------------
 //converts screen coordinates to window coordinates
-GLfloat mouseConvert(GLfloat mouseVal, GLfloat windowScale){
-   return (mouseVal - windowScale/2) / (windowScale/2);
+GLfloat mouseConvert(int mouseVal, int windowScale){
+   return ((float)mouseVal - (float)windowScale/2.0) / ((float)windowScale/2.0);
 }
 
 //rebinds VAO's
- void updateBuffers(){
+ void updateBuffer(){
 
-   // Create a vertex array object
-   glGenBuffers(2, buffers);
+     // Create and initialize a buffer object
+   glGenBuffers(1, &buffer);
    /*########################################################################*/
+         // Bind VAO
+         glBindVertexArray(VAO);
+         // Bind VBO to VAO
+         glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
-         glBindVertexArray(VAOs[0]);
-         // Create and initialize a buffer object
-
-      
-         glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-         glBufferData(GL_ARRAY_BUFFER, sizeof(point4) * vertices.size(),
-                                       vertices.data(), GL_DYNAMIC_DRAW);
-         
+         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), NULL, GL_STATIC_DRAW);
+         // Set vPosition vertex attibute for shader(s)
          glEnableVertexAttribArray(vPosition);
          glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
