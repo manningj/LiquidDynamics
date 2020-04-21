@@ -91,10 +91,10 @@ void init()
 
    
    vPosition = glGetAttribLocation(program, "vPosition");
-   vPosition2 = glGetAttribLocation(program2, "vPosition");
+   
 
    glGenVertexArrays(1, &VAO);
-   glGenVertexArrays(1, &VAO2);
+   
 
    printf("%d\n", VAO);
 
@@ -104,6 +104,11 @@ void init()
    printf("%d\n", vPosition);
 
    Projection = glGetUniformLocation(program, "Projection");
+   
+
+   glUseProgram(program2);
+   vPosition2 = glGetAttribLocation(program2, "vPosition");
+   glGenVertexArrays(1, &VAO2);
    Projection2 = glGetUniformLocation(program2, "Projection");
 
    glGenBuffers(1, &buffer2);
@@ -134,34 +139,34 @@ void display(void)
 {
     
    //printf("DISPLAY\n");
-   glUseProgram(program2);
+   glUseProgram(program);
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-   glBindVertexArray(VAO2);
-   
+   glBindVertexArray(VAO);
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   //GLint fillColor = glGetUniformLocation(program, "FillColor");
-   //GLint scale = glGetUniformLocation(program, "Scale");
-   ////printf("%d %d\n", fillColor, scale);
-   //glUniform3f(fillColor, 1, 1, 1);
-   //glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
+   GLint fillColor = glGetUniformLocation(program, "FillColor");
+   GLint scale = glGetUniformLocation(program, "Scale");
+   //printf("%d %d\n", fillColor, scale);
+   glUniform3f(fillColor, 1, 1, 1);
+   glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
 
-   ////draw methods here
-   //glActiveTexture(GL_TEXTURE0);
-   //glBindTexture(GL_TEXTURE_2D, temp.foo.texture);
-   //
-   //glBindBuffer(GL_ARRAY_BUFFER, buffer);
-   //glDrawArrays(GL_TRIANGLES, 0, 6);
+   //draw methods here
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, temp.foo.texture);
+   
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
+   glDrawArrays(GL_TRIANGLES, 0, 6);
 
    //glUseProgram(program2);
    //glBindVertexArray(VAO2);
-   glBindBuffer(GL_ARRAY_BUFFER, buffer2);
-   //GLint fillColor = glGetUniformLocation(program2, "FillColor");
-   //GLint scale = glGetUniformLocation(program2, "Scale");
-   //printf("%d %d\n", fillColor, scale);
-   //glUniform3f(fillColor, 1, 1, 1);
-   //glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
+   //glBindBuffer(GL_ARRAY_BUFFER, buffer2);
+   ////GLint fillColor = glGetUniformLocation(program2, "FillColor");
+   ////GLint scale = glGetUniformLocation(program2, "Scale");
+   ////printf("%d %d\n", fillColor, scale);
+   ////glUniform3f(fillColor, 1, 1, 1);
+   ////glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
    //glBindTexture(GL_TEXTURE_2D, 0);
-   glDrawArrays(GL_POINTS, 0, 6);
+   //glDrawArrays(GL_POINTS, 0, 6);
 
    glutSwapBuffers();
 }
