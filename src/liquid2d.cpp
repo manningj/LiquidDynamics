@@ -3,15 +3,6 @@
 const char *WINDOW_TITLE = "Liquid Dynamics";
 const double FRAME_RATE_MS = 1000.0 / 60.0;
 
-typedef glm::vec4 color4; // name vec4 as color4 for clarity
-typedef glm::vec4 point4; // name vec4 as point4 for clarity
-
-typedef glm::vec3 color3; // name vec4 as color4 for clarity
-typedef glm::vec3 point3; // name vec4 as point4 for clarity
-
-typedef glm::vec2 color2; // name vec4 as color4 for clarity
-typedef glm::vec2 point2; // name vec4 as point4 for clarity
-
 
 //-------------------------------------------------------------------
                      //function prototypes
@@ -72,6 +63,7 @@ float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Density;
 Field Divergence;
 
+const float VELOCITY_SCALE = 5.0f;
 float forceRadius = 100.0f;
 
 float prevTime; // General time (updated per frame)
@@ -172,7 +164,7 @@ void mouse(int button, int state, int x, int y)
    //left button click
    if(button == GLUT_LEFT_BUTTON) {
       // Get initial point for adding force
-      verticesLine[0] = point4(x, windowHeight - 1 - y, 0.0, 1.0);
+      verticesLine[0] = point4((float)x, (float)windowHeight - 1.0 - (float)y, 0.0, 1.0);
    }
    //right button click
    if(button == GLUT_RIGHT_BUTTON) {
@@ -183,7 +175,7 @@ void mouse(int button, int state, int x, int y)
 //----------------------------------------------------------------------------
 
 void mouseDrag(int x, int y) { // Add force
-   verticesLine[1] = point4(x, windowHeight-1-y, 0.0, 1.0);
+   verticesLine[1] = point4((float)x, (float)windowHeight-1.0-(float)y, 0.0, 1.0);
    printf("%d, %d\n", x, windowHeight - 1 - y);
    addedForce(Velocity.foo, Velocity.bar);
    swapField(&Velocity);
@@ -195,7 +187,7 @@ void mouseDrag(int x, int y) { // Add force
 //called every frame
 void update(void)
 {
-   runtime();
+   //runtime();
 }
 
 //----------------------------------------------------------------------------
@@ -221,7 +213,7 @@ GLfloat mouseConvert(int mouseVal, int windowScale){
 
 //----------------------------------------------------------------------------
 //converts screen coordinates to window coordinates
-point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowScaleY){
+point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowScaleY) {
    return point2(((float)mouseValX - (float)windowScaleX/2.0) / ((float)windowScaleX/2.0), -((float)mouseValY - (float)windowScaleY / 2.0) / ((float)windowScaleY / 2.0));
 }
 
@@ -314,6 +306,10 @@ void initFields(){
 
 }
 
+float convertForce(float newForce) {
+    return glm::clamp((float)(newForce / (2.0 * VELOCITY_SCALE)) + 0.5f, 0.0f, 1.0f);
+}
+
 void unbind(){
 
    //after each call to a shader program, 
@@ -347,17 +343,24 @@ void addedForce(Field velocity, Field destination) {
    GLint impulsePosition = glGetUniformLocation(shaderHandle, "ImpulsePosition");
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
 
-   glUniform2f(newForce, verticesLine[1].x - verticesLine[0].x, verticesLine[1].y - verticesLine[0].y);
+   
+
+   glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x)/ VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
    glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
 
    printf("\nnewForce: %f, %f\n", (float)verticesLine[1].x - (float)verticesLine[0].x, (float)verticesLine[1].y - (float)verticesLine[0].y);
+   printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
+   printf("\nnewForce: %f, %f\n", convertForce(verticesLine[1].x - verticesLine[0].x), convertForce(verticesLine[1].y - verticesLine[0].y));
    printf("timeStep: %f,\n", dt);
    printf("impulseRadius: %f\n", forceRadius);
    printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
    printf("scale: %f, %f\n\n", 1.0f / windowWidth, 1.0f / windowHeight);
+
+
+   printf("%f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / 2.0 * VELOCITY_SCALE);
 
 
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);

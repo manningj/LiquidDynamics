@@ -20,9 +20,9 @@ void main()
 
   vec2 curr = texture(Sampler, gl_FragCoord.xy*Scale).rg;
   
-  if (curr.x>1 || curr.y >1 || curr.x <0 || curr.y <0) {
-    out_colour = vec4(1,1,1,1);
-  } else {
+  // if (curr.x>1 || curr.y >1 || curr.x <0 || curr.y <0) {
+  //   out_colour = vec4(1,1,1,1);
+  // } else {
 
   // Calculate the new velocity caused from forces
   float exp = (pow(gl_FragCoord.x - ImpulsePosition.x,2) + pow(gl_FragCoord.y - ImpulsePosition.y,2))/ImpulseRadius;
@@ -36,8 +36,23 @@ void main()
   //  out_colour = vec4(curr,0,1);
   //}
   
+  // out_colour = vec4(curr, 0.5, 1.0);
+
+  // // First do x
+  // if (added.x>0.5) {
+  //   out_colour.x = curr.x + added.x;
+  // } else if (added.x<0.5) {
+  //   out_colour.x = curr.x - added.x;
+  // }
+
+  // if (added.y>0.5) {
+  //   out_colour.y = curr.y + added.y;
+  // } else if (added.y<0.5){
+  //   out_colour.y = curr.y - added.y;
+  // }
 
   // Write new velocity to framebuffer
-  out_colour = vec4(curr + added, 0, 1);
-  }
+  //if ()
+  out_colour = vec4(curr + added, 0.5, 1);
+  //}
 }

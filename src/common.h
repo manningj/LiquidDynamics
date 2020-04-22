@@ -56,6 +56,15 @@ extern void mouseDrag(int x, int y);
 extern void reshape(int width, int height);
 
 
+typedef glm::vec4 color4; // name vec4 as color4 for clarity
+typedef glm::vec4 point4; // name vec4 as point4 for clarity
+
+typedef glm::vec3 color3; // name vec4 as color4 for clarity
+typedef glm::vec3 point3; // name vec4 as point4 for clarity
+
+typedef glm::vec2 color2; // name vec4 as color4 for clarity
+typedef glm::vec2 point2; // name vec4 as point4 for clarity
+
 typedef struct field_struct {
     GLuint fbo;
     GLuint texture;
@@ -90,7 +99,7 @@ void unbind();
 // Will likely be in liquid2d.cpp
 void runtime();
 void initFields();
-
+float convertForce(float newForce);
 void addedForce(Field velocity, Field destination);
 void advect(Field velocity, Field pressure, Field destination);
 void subtractGradient(Field velocity, Field pressure, Field destination);
