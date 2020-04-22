@@ -46,7 +46,7 @@ Shaders* shaders;
 
 
 float viscosity;
-const float dt;
+float dt;
 Pair Velocity, Pressure, Density;
 Field Divergence;
 
