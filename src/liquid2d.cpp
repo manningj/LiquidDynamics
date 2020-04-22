@@ -296,10 +296,8 @@ void initFields(){
    Pressure = createPair(fieldWidth, fieldHeight);
       std::cout << "-> init Pressure complete"<< "\n";
 
-
    Divergence = createField(fieldWidth, fieldHeight);
       std::cout << "-> init Divergence complete"<< "\n";
-
 
    initShaders(shaders);
       std::cout << "-> init shaders complete"<< "\n";
