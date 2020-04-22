@@ -68,7 +68,7 @@ Shaders temp = {0,0,0,0,0,0};
 Shaders* shaders = &temp;
 
 float viscosity;
-float dt = 1.0/60.0;
+float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Density;
 Field Divergence;
 
@@ -195,7 +195,7 @@ void mouseDrag(int x, int y) { // Add force
 //called every frame
 void update(void)
 {
-
+   runtime();
 }
 
 //----------------------------------------------------------------------------
@@ -254,6 +254,31 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 //----------------------------------------------------------------------------
 // vector field . advection ...
 void runtime(){
+   float  diffusionAlpha =(cellSize*cellSize) /(viscosity*dt);
+   float  diffusionBeta = (4 + (cellSize*cellSize) /(viscosity*dt));
+
+   float  pressureAlpha =(cellSize*cellSize) * -1.0f;
+   float  pressureBeta = 4.0f;
+
+   advect(Velocity.foo, Velocity.foo,Velocity.bar);
+   swapField(&Velocity);
+
+   for(int i = 0; i < jacobiIterations; ++i){
+      jacobi(Velocity.foo, Velocity.foo, Velocity.bar, diffusionAlpha,diffusionBeta);
+      swapField(&Velocity);
+   }
+   //add force here
+
+   divergence(Velocity.foo, Divergence);
+   clearField(Pressure.foo, 0);
+
+   for(int i = 0; i < jacobiIterations; ++i){
+      jacobi(Pressure.foo, Divergence, Pressure.bar, pressureAlpha,pressureBeta);
+      swapField(&Pressure);
+   }
+
+   subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
+   swapField(&Velocity);
 
    // GPU Gems pseudocode:
    // Apply the first 3 operators in Equation 12.
@@ -265,15 +290,28 @@ void runtime(){
    // u = subtractPressureGradient(u, p); 
 
 }
+
+
 void initFields(){
+   initShaders(shaders);
+      std::cout << "-> init fields started" << "\n";
 
    Velocity = createPair(fieldWidth, fieldHeight);
-   clearField(Velocity.foo, 0.0);
+      std::cout << "-> init velocity complete"<< "\n";
+   clearField(Velocity.foo, 0.5);
+
    Pressure = createPair(fieldWidth, fieldHeight);
-   clearField(Pressure.foo, 0.0);
+      std::cout << "-> init Pressure complete"<< "\n";
+
+
    Divergence = createField(fieldWidth, fieldHeight);
-   clearField(Divergence, 0.0);
+      std::cout << "-> init Divergence complete"<< "\n";
+
+
    initShaders(shaders);
+      std::cout << "-> init shaders complete"<< "\n";
+
+
 }
 
 void unbind(){
@@ -341,7 +379,6 @@ void advect(Field velocity, Field position, Field destination){
 
    GLuint rdx = glGetUniformLocation(shaderHandle, "rdx");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
-   GLuint veloTex = glGetUniformLocation(shaderHandle, "veloTex");
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
 
 
@@ -361,7 +398,7 @@ void advect(Field velocity, Field position, Field destination){
    //obstacles stuff here
    
    //use the shaders
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
    unbind();
 }
@@ -391,7 +428,7 @@ void jacobi(Field xField, Field bField, Field destination, float alphaParameter,
    GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
    GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
 
-   GLuint x = glGetUniformLocation(shaderHandle, "x");
+   //GLuint x = glGetUniformLocation(shaderHandle, "x");
    GLuint b = glGetUniformLocation(shaderHandle, "b");
 
    glUniform1f(alpha, alphaParameter);
@@ -412,7 +449,7 @@ void jacobi(Field xField, Field bField, Field destination, float alphaParameter,
    //obstacles stuff here
    
    //use the shaders
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
    unbind();
 }
@@ -424,7 +461,7 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
 
    glUseProgram(shaderHandle);
 
-   GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
+  // GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
    GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
 
@@ -447,7 +484,7 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
    //obstacles stuff here
    
    //use the shaders
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
    unbind();
 
@@ -457,7 +494,7 @@ void divergence(Field velocityField, Field destination){
    GLuint shaderHandle = shaders->divergence;
    glUseProgram(shaderHandle);
 
-   GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
+   //GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
    GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
 
 
@@ -471,7 +508,7 @@ void divergence(Field velocityField, Field destination){
    glBindTexture(GL_TEXTURE_2D, velocityField.texture);
    
    //use the shaders
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
    unbind();
 

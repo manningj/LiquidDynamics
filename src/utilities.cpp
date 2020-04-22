@@ -1,12 +1,24 @@
 #include "common.h"
 
 void initShaders(Shaders* shaders) {
+	std::cout << "->-> init shaders started\n";
 	shaders->drawTexture = InitShader("vshader.glsl", "drawTexture.glsl");
-	//shaders->advect = InitShader("vshader.glsl", "advect.glsl");
-	//shaders->divergence = InitShader("vshader.glsl", "divergence.glsl");
-	//shaders->jacobi = InitShader("vshader.glsl", "jacobi.glsl");
-	//shaders->subtractGradient = InitShader("vshader.glsl", "subtractGradient.glsl");
+		std::cout << "->-> init drawTexture complete\n";
+
+	shaders->advect = InitShader("vshader.glsl", "advect.glsl");
+		std::cout << "->-> init advect complete\n";
+
+	shaders->divergence = InitShader("vshader.glsl", "divergence.glsl");
+		std::cout << "->-> init divergence complete\n";
+
+	shaders->jacobi = InitShader("vshader.glsl", "jacobi.glsl");
+		std::cout << "->-> init jacobi complete\n";
+
+	shaders->subtractGradient = InitShader("vshader.glsl", "subtractGradient.glsl");
+		std::cout << "->-> init subtractGradient complete\n";
+
 	shaders->addedForce = InitShader("vshader.glsl", "addedForce.glsl");
+		std::cout << "->-> init addedForce complete\n";
 }
 
 Field createField(GLint width, GLint height) {

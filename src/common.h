@@ -28,6 +28,8 @@
 //#define fieldHeight (windowHeight/2)
  
 
+ #define jacobiIterations 40
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -82,10 +84,11 @@ Pair createPair(int width, int height);
 void clearField(Field field, float clearColor);
 void swapField(Pair* fieldPair);
 void unbind();
+
 // liquid.cpp
 // Function for every item in shader struct (to calculate)
 // Will likely be in liquid2d.cpp
-
+void runtime();
 void initFields();
 
 void addedForce(Field velocity, Field destination);
