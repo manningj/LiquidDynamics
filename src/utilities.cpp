@@ -1,7 +1,10 @@
 #include "common.h"
 
 void initShaders(Shaders* shaders) {
-	//shaders->advection = InitShader("shaders//vshader.glsl", "shaders//fshader.avection.glsl");
+	shaders->advect = InitShader("vshader.glsl", "advection.glsl");
+	shaders->divergence = InitShader("vshader.glsl", "divergence.glsl");
+	shaders->jacobi = InitShader("vshader.glsl", "jacobi.glsl");
+	shaders->subtractGradient = InitShader("vshader.glsl", "subtractGradient.glsl");
 }
 
 Field createField(GLint width, GLint height) {
@@ -54,7 +57,7 @@ Field createField(GLint width, GLint height) {
 }
 
 Pair createPair(int width, int height) {
-	// Create 2 fields, 1 for 
+	// Create 2 fields, foo is the read field and bar is write field
 	Pair newPair;
 	newPair.foo = createField(width, height);
 	newPair.bar = createField(width, height);

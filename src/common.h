@@ -19,6 +19,13 @@
 // Define a helpful macro for handling offsets into buffer objects
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
+#define cellSize 1.25f
+#define windowWidth 640
+#define windowHeight 640
+#define fieldWidth (windowWidth/2)
+#define fieldHeight (windowHeight/2)
+ 
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -58,9 +65,8 @@ typedef struct shaders_struct {
     GLuint advect;
     GLuint diffuse;
     GLuint jacobi;
-    GLuint addForces;
-    GLuint computePressure;
-    GLuint subtractPressureGradient;
+    GLuint divergence;
+    GLuint subtractGradient;
     //more items here eventually
 } Shaders;
 
@@ -70,9 +76,17 @@ Field createField(GLint width, GLint height);
 Pair createPair(int width, int height);
 void clearField(Field field, float clearColor);
 void swapField(Pair* fieldPair);
-
+void unbind();
 // liquid.cpp
 // Function for every item in shader struct (to calculate)
 // Will likely be in liquid2d.cpp
+
+void initFields();
+
+void advect(Field velocity, Field pressure, Field destination);
+void subtractGradient(Field velocity, Field pressure, Field destination);
+void divergence(Field velocityField, Field destination);
+void jacobi(Field xField, Field bField, Field destination,float alphaParameter, float betaParameter);
+
 
 #endif

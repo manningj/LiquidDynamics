@@ -29,9 +29,6 @@ const GLfloat Z_NEAR = -1.0f;
 const GLfloat Z_FAR  = 1.0f;
 //boolean used for double clicking
 bool mousePressed = false;
-//window sizes
-GLint windowWidth = 640;
-GLint windowHeight= 640;
 
 const color4 clearColour = color4(0,0,0,1); //black background
 //--------------------------------------------------------------------
@@ -64,6 +61,20 @@ Pair addedForceFields;
 
 enum programs {drawTexture, addedForce};
 
+// GLuint Projection, Colour;
+// GLuint VAOs[2];
+// GLuint buffers[2];
+// GLuint program, vPosition;
+
+Shaders* shaders;
+
+
+float viscosity;
+float dt;
+Pair Velocity, Pressure, Density;
+Field Divergence;
+
+GLuint Display;
 //----------------------------------------------------------------------------
 
 // OpenGL initialization
@@ -190,8 +201,7 @@ void update(void)
 void reshape(int width, int height)
 {
    glViewport(0, 0, width, height);
-   windowHeight = height;
-   windowWidth = width;
+   
   
    glm::mat4 projection = glm::ortho(LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
    
@@ -244,3 +254,181 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 
 //----------------------------------------------------------------------------
 // vector field . advection ...
+void runtime(){
+
+}
+void initFields(){
+
+   Velocity = createPair(windowWidth, windowHeight);
+   Pressure = createPair(windowWidth, windowHeight);
+
+   Divergence = createField(windowWidth, windowHeight);
+   initShaders(shaders);
+   Display = InitShader("vshader.glsl", "fshader.glsl");
+}
+
+void unbind(){
+
+   //after each call to a shader program, 
+   //we should remove the shader specific bindings.
+   //we do this by bindining them to "0";
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, 0); //unbind tex2
+   
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex1
+
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, 0); //unbind tex0
+
+   glBindFramebuffer(GL_FRAMEBUFFER,0); //unbind framebuffer
+   glDisable(GL_BLEND);
+
+
+}
+void advect(Field velocity, Field position, Field destination){
+   
+   GLuint shaderHandle = shaders->advect;
+
+   glUseProgram(shaderHandle);
+
+   GLuint rdx = glGetUniformLocation(shaderHandle, "rdx");
+   GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
+   GLuint veloTex = glGetUniformLocation(shaderHandle, "veloTex");
+   GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
+
+
+   glUniform2f(rdx, 1.0f / cellSize, 1.0f / cellSize); // rdx is 1/dx and dy
+   glUniform1f(timeStep, dt);
+   glUniform1i(posTex, 1); // texture 1, a sampler2D.
+   
+   //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   //set texture 0 to be the velocity field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, velocity.texture);
+
+   //set texture one to be the position texture
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, position.texture);
+   //obstacles stuff here
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
+}
+
+void jacobi(Field xField, Field bField, Field destination, float alphaParameter, float betaParameter){
+
+   /*this gets called a number of times in a loop. 
+      used for poisson pressure,
+         and for  viscous diffusion.
+
+
+   for pressure, alpha = -(dx^2)
+                rbeta = 1/4
+                x = pressure
+                b = divergence
+
+   for diffusion, alpha = dx^2 /v*dt 
+                rbeta = 1/(4 + dx^2 /v*dt)
+                x = velocity
+                d = velocity
+   */
+
+   GLuint shaderHandle = shaders->jacobi;
+
+   glUseProgram(shaderHandle);
+
+   GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
+   GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
+
+   GLuint x = glGetUniformLocation(shaderHandle, "x");
+   GLuint b = glGetUniformLocation(shaderHandle, "b");
+
+   glUniform1f(alpha, alphaParameter);
+   glUniform1f(rBeta, 1/betaParameter);
+   glUniform1i(b, 1);
+
+
+    //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+   //set texture 0 to be the x field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, xField.texture);
+
+   //set texture one to be the b texture
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, bField.texture);
+   //obstacles stuff here
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
+}
+
+
+void subtractGradient(Field velocityField, Field pressureField, Field destination){
+
+   GLuint shaderHandle = shaders->subtractGradient;
+
+   glUseProgram(shaderHandle);
+
+   GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
+   GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
+   GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
+
+
+   glUniform1f(gradScale, 1/fieldWidth);
+   glUniform1i(pressure, 1);
+
+   
+
+    //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+   //set texture 0 to be the velocity field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, velocityField.texture);
+
+   //set texture one to be the pressure field texture
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, pressureField.texture);
+   //obstacles stuff here
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
+
+}
+
+void divergence(Field velocityField, Field destination){
+   GLuint shaderHandle = shaders->divergence;
+   glUseProgram(shaderHandle);
+
+   GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
+   GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
+
+
+   glUniform1f(halfrdx, 0.5f/cellSize);
+
+   //bindframe buffer to the destination field
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+   //set texture 0 to be the velocity field
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, velocityField.texture);
+   
+   //use the shaders
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   //unbind everything
+   unbind();
+
+
+    
+}
+
