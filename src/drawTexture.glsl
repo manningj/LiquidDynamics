@@ -5,7 +5,7 @@ out vec4 out_colour;
 
 uniform sampler2D Sampler;
 uniform vec3 FillColor;
-uniform vec2 Scale;
+uniform vec2 Scale; // 1/fieldWith 1/fieldHeight
 
 void main() 
 {

@@ -19,11 +19,13 @@
 // Define a helpful macro for handling offsets into buffer objects
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
-#define cellSize 1.25f
+#define cellSize 1.0f
 #define windowWidth 640
 #define windowHeight 640
-#define fieldWidth (windowWidth/2)
-#define fieldHeight (windowHeight/2)
+#define fieldWidth windowWidth
+#define fieldHeight windowHeight
+//#define fieldWidth (windowWidth/2)
+//#define fieldHeight (windowHeight/2)
  
 
 #include <glm/glm.hpp>
