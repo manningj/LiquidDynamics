@@ -26,10 +26,11 @@ void main()
   
   //vec2 added = vec2(0.01,0.01);
 
-  //if (gl_FragCoord.x < 640 && gl_FragCoord.y < 640) {
-  //out_colour = vec4(1,0,0, 1);
+  //if (gl_FragCoord.x == ImpulsePosition.x && gl_FragCoord.y == ImpulsePosition.y) {
+  //  out_colour = vec4(1,0,0, 1);
   //} else {
-  
+  //  out_colour = vec4(curr,0,1);
+  //}
   
 
   // Write new velocity to framebuffer

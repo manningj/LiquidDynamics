@@ -172,7 +172,7 @@ void mouse(int button, int state, int x, int y)
    //left button click
    if(button == GLUT_LEFT_BUTTON) {
       // Get initial point for adding force
-      verticesLine[0] = point4((float)x, (float)-y, 0.0, 1.0);
+      verticesLine[0] = point4(x, windowHeight - 1 - y, 0.0, 1.0);
    }
    //right button click
    if(button == GLUT_RIGHT_BUTTON) {
@@ -183,8 +183,8 @@ void mouse(int button, int state, int x, int y)
 //----------------------------------------------------------------------------
 
 void mouseDrag(int x, int y) { // Add force
-   verticesLine[1] = point4((float)x, (float)-y, 0.0, 1.0);
-   printf("%d, %d\n", x, y);
+   verticesLine[1] = point4(x, windowHeight-1-y, 0.0, 1.0);
+   printf("%d, %d\n", x, windowHeight - 1 - y);
    addedForce(Velocity.foo, Velocity.bar);
    swapField(&Velocity);
    verticesLine[0] = verticesLine[1]; // Start point for next force
@@ -319,7 +319,7 @@ void addedForce(Field velocity, Field destination) {
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
    glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
 
-   printf("\nnewForce: %f, %f\n", (float)(verticesLine[1].x - verticesLine[0].x), (float)(verticesLine[1].y - verticesLine[0].y));
+   printf("\nnewForce: %f, %f\n", (float)verticesLine[1].x - (float)verticesLine[0].x, (float)verticesLine[1].y - (float)verticesLine[0].y);
    printf("timeStep: %f,\n", dt);
    printf("impulseRadius: %f\n", forceRadius);
    printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
