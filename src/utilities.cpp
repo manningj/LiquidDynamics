@@ -1,10 +1,12 @@
 #include "common.h"
 
 void initShaders(Shaders* shaders) {
-	shaders->advect = InitShader("vshader.glsl", "advection.glsl");
-	shaders->divergence = InitShader("vshader.glsl", "divergence.glsl");
-	shaders->jacobi = InitShader("vshader.glsl", "jacobi.glsl");
-	shaders->subtractGradient = InitShader("vshader.glsl", "subtractGradient.glsl");
+	shaders->drawTexture = InitShader("vshader.glsl", "drawTexture.glsl");
+	//shaders->advect = InitShader("vshader.glsl", "advect.glsl");
+	//shaders->divergence = InitShader("vshader.glsl", "divergence.glsl");
+	//shaders->jacobi = InitShader("vshader.glsl", "jacobi.glsl");
+	//shaders->subtractGradient = InitShader("vshader.glsl", "subtractGradient.glsl");
+	shaders->addedForce = InitShader("vshader.glsl", "addedForce.glsl");
 }
 
 Field createField(GLint width, GLint height) {

@@ -10,7 +10,7 @@ uniform vec2 Scale; // 1/fieldWith 1/fieldHeight
 void main() 
 {
  //vec3 L = FillColor;
-  vec3 L = texture(Sampler, gl_FragCoord.xy * Scale).rgb;
-  out_colour = vec4(L, 1);
+  vec3 curr = texture(Sampler, gl_FragCoord.xy * Scale).rgb;
+  out_colour = vec4(curr, 1);
   //out_colour = f_colour;
 }

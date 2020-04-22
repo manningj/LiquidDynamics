@@ -51,90 +51,100 @@ point4 verticesLine[2] = {
 
 //-----------------------------------------------------------------------
 
-GLuint program[2];
+// GLuint program[2]; // Not needed since we have shader struct
+// 0 is drawTexture, 1 is addedForce -> May need to restructure data structure to handle all shaders?
 GLuint VAO[2];
 GLuint buffer[2];
 GLuint vPosition[2];
 GLuint Projection[2];
 
-Pair addedForceFields;
-
-enum programs {drawTexture, addedForce};
+// enum programs {drawTexture, addedForce};
 
 // GLuint Projection, Colour;
 // GLuint VAOs[2];
 // GLuint buffers[2];
 // GLuint program, vPosition;
-
-Shaders* shaders;
-
+Shaders temp = {0,0,0,0,0,0};
+Shaders* shaders = &temp;
 
 float viscosity;
-float dt;
+float dt = 1.0/60.0;
 Pair Velocity, Pressure, Density;
 Field Divergence;
 
-GLuint Display;
+float forceRadius = 3.0f;
+
+float prevTime; // General time (updated per frame)
+float prevTimeDrag; // Time when adding forces
+
 //----------------------------------------------------------------------------
 
 // OpenGL initialization
 
 void init()
 {
-   
-   program[0] = InitShader("vshader.glsl", "drawTexture.glsl");
-   program[1] = InitShader("vshader.glsl", "addedForce.glsl");
+   initFields(); // Set up fields and initialize all shaders
+  
+   printf("INIT");
 
-   glUseProgram(program[0]);
+   glUseProgram(shaders->drawTexture);
 
    // Set up draw texture program
-   vPosition[0] = glGetAttribLocation(program[0], "vPosition");
+   vPosition[0] = glGetAttribLocation(shaders->drawTexture, "vPosition");
    glGenVertexArrays(1, &VAO[0]);
    updateBuffer(0);
-   Projection[0] = glGetUniformLocation(program[0], "Projection");
+   Projection[0] = glGetUniformLocation(shaders->drawTexture, "Projection");
    
    // Set up added force program
-   glUseProgram(program[1]);
-   vPosition[1] = glGetAttribLocation(program[1], "vPosition");
+   glUseProgram(shaders->addedForce);
+   vPosition[1] = glGetAttribLocation(shaders->addedForce, "vPosition");
    glGenVertexArrays(1, &VAO[1]);
    updateBuffer(1);
-   Projection[1] = glGetUniformLocation(program[1], "Projection");
+   Projection[1] = glGetUniformLocation(shaders->addedForce, "Projection");
 
-   addedForceFields = createPair(windowWidth, windowHeight);
-   clearField(addedForceFields.foo, 1.0);
+  // addedForceFields = createPair(windowWidth, windowHeight);
+  // clearField(addedForceFields.foo, 1.0);
 
    glEnable(GL_DEPTH_TEST);
 
    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
+   //prevTime = std::clock();
+
 }
 
 //----------------------------------------------------------------------------
 
 void display(void)
 {
+   //dt = (std::clock() - prevTime)/(float)CLOCKS_PER_SEC;
+   //prevTime = std::clock();
+
+   GLuint shaderHandle = shaders->drawTexture;
+
    // Clear output framebuffer
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    // Draw texture
-   glUseProgram(program[0]);
-   glBindVertexArray(VAO[0]);
+   glUseProgram(shaderHandle);
+   glBindVertexArray(VAO[0]); // Drawing square
    glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
 
    // Set uniforms
-   GLint fillColor = glGetUniformLocation(program[0], "FillColor");
-   GLint scale = glGetUniformLocation(program[0], "Scale");
+   GLint fillColor = glGetUniformLocation(shaderHandle, "FillColor");
+   GLint scale = glGetUniformLocation(shaderHandle, "Scale");
    glUniform3f(fillColor, 1, 1, 1);
    glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
 
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, addedForceFields.foo.texture);
+   glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
    glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
    glDrawArrays(GL_TRIANGLES, 0, 6);
    glBindTexture(GL_TEXTURE_2D, 0);
 
    glutSwapBuffers();
+   
 }
 
 //----------------------------------------------------------------------------
@@ -162,7 +172,7 @@ void mouse(int button, int state, int x, int y)
    //left button click
    if(button == GLUT_LEFT_BUTTON) {
       // Get initial point for adding force
-      verticesLine[0] = point4(mouseConvert(x, windowWidth), -mouseConvert(y, windowHeight), 0, 1.0);
+      verticesLine[0] = point4((float)x, (float)-y, 0.0, 1.0);
    }
    //right button click
    if(button == GLUT_RIGHT_BUTTON) {
@@ -173,18 +183,11 @@ void mouse(int button, int state, int x, int y)
 //----------------------------------------------------------------------------
 
 void mouseDrag(int x, int y) { // Add force
-   point4 converted = point4(mouseConvert(x, windowWidth), -mouseConvert(y, windowHeight), 0, 1.0);
-   verticesLine[1] = converted;
-   glBindFramebuffer(GL_FRAMEBUFFER, addedForceFields.foo.fbo);
-   glUseProgram(program[1]);
-   glBindVertexArray(VAO[1]);
-   glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(verticesLine), verticesLine, GL_DYNAMIC_DRAW);
-   glVertexAttribPointer(vPosition[1], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-   GLint newForce = glGetUniformLocation(program[1], "NewForce");
-   glUniform2f(newForce, verticesLine[1].x - verticesLine[0].x, verticesLine[1].y - verticesLine[0].y);
-   glDrawArrays(GL_LINES, 0, 2);
-   verticesLine[0] = converted; // Start point for next force
+   verticesLine[1] = point4((float)x, (float)-y, 0.0, 1.0);
+   printf("%d, %d\n", x, y);
+   addedForce(Velocity.foo, Velocity.bar);
+   swapField(&Velocity);
+   verticesLine[0] = verticesLine[1]; // Start point for next force
 }
 
 //----------------------------------------------------------------------------
@@ -205,9 +208,9 @@ void reshape(int width, int height)
   
    glm::mat4 projection = glm::ortho(LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
    
-   glUseProgram(program[0]);
+   glUseProgram(shaders->drawTexture);
    glUniformMatrix4fv(Projection[0], 1, GL_FALSE, glm::value_ptr(projection));
-   glUseProgram(program[1]);
+   glUseProgram(shaders->addedForce);
    glUniformMatrix4fv(Projection[1], 1, GL_FALSE, glm::value_ptr(projection));
 }
 //----------------------------------------------------------------------------
@@ -256,15 +259,25 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 // vector field . advection ...
 void runtime(){
 
+   // GPU Gems pseudocode:
+   // Apply the first 3 operators in Equation 12.
+   // u = advect(u);
+   // u = diffuse (u) ;
+   // u = addForces(u);
+   // Now apply the projection operator to the result.
+   // p = computePressure(u);
+   // u = subtractPressureGradient(u, p); 
+
 }
 void initFields(){
 
-   Velocity = createPair(windowWidth, windowHeight);
-   Pressure = createPair(windowWidth, windowHeight);
-
-   Divergence = createField(windowWidth, windowHeight);
+   Velocity = createPair(fieldWidth, fieldHeight);
+   clearField(Velocity.foo, 0.0);
+   Pressure = createPair(fieldWidth, fieldHeight);
+   clearField(Pressure.foo, 0.0);
+   Divergence = createField(fieldWidth, fieldHeight);
+   clearField(Divergence, 0.0);
    initShaders(shaders);
-   Display = InitShader("vshader.glsl", "fshader.glsl");
 }
 
 void unbind(){
@@ -274,6 +287,7 @@ void unbind(){
    //we do this by bindining them to "0";
    glActiveTexture(GL_TEXTURE2);
    glBindTexture(GL_TEXTURE_2D, 0); //unbind tex2
+
    
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, 0); // unbind tex1
@@ -286,6 +300,43 @@ void unbind(){
 
 
 }
+
+void addedForce(Field velocity, Field destination) {
+
+   GLuint shaderHandle = shaders->addedForce;
+   
+   glUseProgram(shaderHandle);
+
+   GLint newForce = glGetUniformLocation(shaderHandle, "NewForce");
+   GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
+   GLint impulseRadius = glGetUniformLocation(shaderHandle, "ImpulseRadius");
+   GLint impulsePosition = glGetUniformLocation(shaderHandle, "ImpulsePosition");
+   GLint scale = glGetUniformLocation(shaderHandle, "Scale");
+
+   glUniform2f(newForce, verticesLine[1].x - verticesLine[0].x, verticesLine[1].y - verticesLine[0].y);
+   glUniform1f(timeStep, dt);
+   glUniform1f(impulseRadius, forceRadius);
+   glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
+   glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
+
+   printf("\nnewForce: %f, %f\n", (float)(verticesLine[1].x - verticesLine[0].x), (float)(verticesLine[1].y - verticesLine[0].y));
+   printf("timeStep: %f,\n", dt);
+   printf("impulseRadius: %f\n", forceRadius);
+   printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
+   printf("scale: %f, %f\n\n", 1.0f / windowWidth, 1.0f / windowHeight);
+
+
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, velocity.texture);
+
+   glBindVertexArray(VAO[0]);
+   glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+   glDrawArrays(GL_TRIANGLES, 0, 6);;
+   unbind();
+}
+
 void advect(Field velocity, Field position, Field destination){
    
    GLuint shaderHandle = shaders->advect;

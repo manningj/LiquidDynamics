@@ -36,6 +36,7 @@
 #include <vector>
 #include <iostream>
 #include <string.h>
+#include <ctime>
 
 extern GLuint InitShader(const char* vShaderFile, const char* fShaderFile);
 
@@ -64,11 +65,13 @@ typedef struct pair_struct {
 } Pair;
 
 typedef struct shaders_struct {
+    GLuint drawTexture;
     GLuint advect;
     GLuint diffuse;
     GLuint jacobi;
     GLuint divergence;
     GLuint subtractGradient;
+    GLuint addedForce;
     //more items here eventually
 } Shaders;
 
@@ -85,6 +88,7 @@ void unbind();
 
 void initFields();
 
+void addedForce(Field velocity, Field destination);
 void advect(Field velocity, Field pressure, Field destination);
 void subtractGradient(Field velocity, Field pressure, Field destination);
 void divergence(Field velocityField, Field destination);
