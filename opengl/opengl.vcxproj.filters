@@ -52,5 +52,14 @@
     <None Include="..\src\addedForce.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\src\divergence.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\src\jacobi.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\src\subtractGradient.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
