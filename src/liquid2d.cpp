@@ -72,7 +72,7 @@ float dt = 1.0/60.0;
 Pair Velocity, Pressure, Density;
 Field Divergence;
 
-float forceRadius = 3.0f;
+float forceRadius = 100.0f;
 
 float prevTime; // General time (updated per frame)
 float prevTimeDrag; // Time when adding forces
@@ -235,13 +235,9 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
          glBindVertexArray(VAO[index]);
          // Bind VBO to VAO
          glBindBuffer(GL_ARRAY_BUFFER, buffer[index]);
-         if (index == 0) {
-             glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
-         }
-         else if (index == 1) {
-             glBufferData(GL_ARRAY_BUFFER, sizeof(verticesLine), verticesLine, GL_STATIC_DRAW);
-         }
-         
+
+         glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
+
          // Set vPosition vertex attibute for shader(s)
          glEnableVertexAttribArray(vPosition[index]);
          glVertexAttribPointer(vPosition[index], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
