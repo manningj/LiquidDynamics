@@ -81,9 +81,14 @@ GLuint Display;
 
 void init()
 {
-   
+   shaders = new Shaders;
+   initFields();
+
+   std::cout << " init fields complete"<< "\n";
+
    program[0] = InitShader("vshader.glsl", "drawTexture.glsl");
    program[1] = InitShader("vshader.glsl", "addedForce.glsl");
+
 
    glUseProgram(program[0]);
 
@@ -259,12 +264,29 @@ void runtime(){
 }
 void initFields(){
 
-   Velocity = createPair(windowWidth, windowHeight);
-   Pressure = createPair(windowWidth, windowHeight);
+      std::cout << " init fields started" << "\n";
 
-   Divergence = createField(windowWidth, windowHeight);
+   Velocity = createPair(fieldWidth, fieldHeight);
+      std::cout << " init velocity complete"<< "\n";
+
+
+   Pressure = createPair(fieldWidth, fieldHeight);
+      std::cout << " init Pressure complete"<< "\n";
+
+
+   Divergence = createField(fieldWidth, fieldHeight);
+      std::cout << " init Divergence complete"<< "\n";
+
+
    initShaders(shaders);
-   Display = InitShader("vshader.glsl", "fshader.glsl");
+      std::cout << " init shaders complete"<< "\n";
+
+
+   Display = InitShader("vshader.glsl", "drawTexture.glsl");
+         std::cout << " init displayy complete"<< "\n";
+
+
+   
 }
 
 void unbind(){

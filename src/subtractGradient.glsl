@@ -13,10 +13,10 @@ void main(){
 
     //we need to get the neighbouring pressure values.
 
-    vec4 pT = texelFetchOffset(pressure, fragCoord, 0, ivec2(0, 1)).r;
-    vec4 pB = texelFetchOffset(pressure, fragCoord, 0, ivec2(0, -1)).r;
-    vec4 pR = texelFetchOffset(pressure, fragCoord, 0, ivec2(1, 0)).r;
-    vec4 pL = texelFetchOffset(pressure, fragCoord, 0, ivec2(-1, 0)).r;
+    float pT = texelFetchOffset(pressure, fragCoord, 0, ivec2(0, 1)).r;
+    float pB = texelFetchOffset(pressure, fragCoord, 0, ivec2(0, -1)).r;
+    float pR = texelFetchOffset(pressure, fragCoord, 0, ivec2(1, 0)).r;
+    float pL = texelFetchOffset(pressure, fragCoord, 0, ivec2(-1, 0)).r;
 
     //index vector for masking velocity
     vec2 veloMask = vec2(1.0);
@@ -29,9 +29,4 @@ void main(){
 
     fragOut = (veloMask * newVelo);
 
-}
-
-void divergence(Field velocityField, Field destination){
-
-    
 }
