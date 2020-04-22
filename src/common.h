@@ -99,7 +99,6 @@ void unbind();
 // Will likely be in liquid2d.cpp
 void runtime();
 void initFields();
-float convertForce(float newForce);
 void addedForce(Field velocity, Field destination);
 void advect(Field velocity, Field pressure, Field destination);
 void subtractGradient(Field velocity, Field pressure, Field destination);

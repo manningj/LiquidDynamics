@@ -63,8 +63,9 @@ float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Density;
 Field Divergence;
 
-const float VELOCITY_SCALE = 5.0f;
-float forceRadius = 100.0f;
+// Velocity settings when adding force
+const float VELOCITY_SCALE = 10.0f; // Lower number increases intensity of force
+float forceRadius = 500.0f; // Affects radius of sqrt this value
 
 float prevTime; // General time (updated per frame)
 float prevTimeDrag; // Time when adding forces
@@ -302,13 +303,8 @@ void initFields(){
 
    initShaders(shaders);
       std::cout << "-> init shaders complete"<< "\n";
-
-
 }
 
-float convertForce(float newForce) {
-    return glm::clamp((float)(newForce / (2.0 * VELOCITY_SCALE)) + 0.5f, 0.0f, 1.0f);
-}
 
 void unbind(){
 
@@ -318,7 +314,6 @@ void unbind(){
    glActiveTexture(GL_TEXTURE2);
    glBindTexture(GL_TEXTURE_2D, 0); //unbind tex2
 
-   
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, 0); // unbind tex1
 
@@ -327,8 +322,6 @@ void unbind(){
 
    glBindFramebuffer(GL_FRAMEBUFFER,0); //unbind framebuffer
    glDisable(GL_BLEND);
-
-
 }
 
 void addedForce(Field velocity, Field destination) {
@@ -343,25 +336,17 @@ void addedForce(Field velocity, Field destination) {
    GLint impulsePosition = glGetUniformLocation(shaderHandle, "ImpulsePosition");
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
 
-   
-
    glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x)/ VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
    glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
 
-   printf("\nnewForce: %f, %f\n", (float)verticesLine[1].x - (float)verticesLine[0].x, (float)verticesLine[1].y - (float)verticesLine[0].y);
    printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
-   printf("\nnewForce: %f, %f\n", convertForce(verticesLine[1].x - verticesLine[0].x), convertForce(verticesLine[1].y - verticesLine[0].y));
    printf("timeStep: %f,\n", dt);
    printf("impulseRadius: %f\n", forceRadius);
    printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
    printf("scale: %f, %f\n\n", 1.0f / windowWidth, 1.0f / windowHeight);
-
-
-   printf("%f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / 2.0 * VELOCITY_SCALE);
-
 
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
