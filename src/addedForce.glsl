@@ -19,9 +19,13 @@ void main()
   // Grab the current velocity
 
   vec2 curr = texture(Sampler, gl_FragCoord.xy*Scale).rg;
+  
+  if (curr.x>1 || curr.y >1 || curr.x <0 || curr.y <0) {
+    out_colour = vec4(1,1,1,1);
+  } else {
 
   // Calculate the new velocity caused from forces
-  float exp = pow(gl_FragCoord.x - ImpulsePosition.x,2) + pow(gl_FragCoord.y - ImpulsePosition.y,2)/ImpulseRadius;
+  float exp = (pow(gl_FragCoord.x - ImpulsePosition.x,2) + pow(gl_FragCoord.y - ImpulsePosition.y,2))/ImpulseRadius;
   vec2 added = NewForce * pow(TimeStep, exp);
   
   //vec2 added = vec2(0.01,0.01);
@@ -35,4 +39,5 @@ void main()
 
   // Write new velocity to framebuffer
   out_colour = vec4(curr + added, 0, 1);
+  }
 }
