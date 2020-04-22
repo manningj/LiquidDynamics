@@ -100,7 +100,7 @@
   <ItemGroup>
     <None Include="..\src\advect.glsl" />
     <None Include="..\src\drawTexture.glsl" />
-    <None Include="..\src\fshader.glsl" />
+    <None Include="..\src\addedForce.glsl" />
     <None Include="..\src\vshader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

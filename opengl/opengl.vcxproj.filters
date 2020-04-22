@@ -40,9 +40,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\fshader.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\src\vshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
@@ -50,6 +47,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\src\drawTexture.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\src\addedForce.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
