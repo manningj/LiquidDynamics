@@ -15,12 +15,15 @@ uniform sampler2D b;// b vector, Ax = b
 //              b = divergence
 //for diffusion, alpha = dx^2 /v*dt 
 //              rbeta = 1/(4 + dx^2 /v*dt)
+
 //              x = velocity
-//              d = velocity
+//              b = velocity
 
 void main(){
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
+
     //get left, right, bottom, top samples.
+
     vec4 top = texelFetchOffset(x, fragCoord, 0, ivec2(0, 1));
     vec4 bot = texelFetchOffset(x, fragCoord, 0, ivec2(0, -1));
     vec4 right = texelFetchOffset(x, fragCoord, 0, ivec2(1, 0));

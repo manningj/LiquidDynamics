@@ -78,7 +78,6 @@ typedef struct pair_struct {
 typedef struct shaders_struct {
     GLuint drawTexture;
     GLuint advect;
-    GLuint diffuse;
     GLuint jacobi;
     GLuint divergence;
     GLuint subtractGradient;
@@ -98,6 +97,7 @@ void unbind();
 // Function for every item in shader struct (to calculate)
 // Will likely be in liquid2d.cpp
 void runtime();
+void assignAttrib();
 void initFields();
 void addedForce(Field velocity, Field destination);
 void advect(Field velocity, Field pressure, Field destination);

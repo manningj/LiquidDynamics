@@ -1,11 +1,11 @@
 #version 150
 
-out vec2 fragOut;
+out vec4 fragOut;
 
 uniform sampler2D velocity;
 uniform sampler2D pressure;
 
-uniform float gradScale; // 0.5/ gridscale
+uniform float gradScale; // 0.5 / gridscale
 
 void main(){
 
@@ -19,14 +19,14 @@ void main(){
     float pL = texelFetchOffset(pressure, fragCoord, 0, ivec2(-1, 0)).r;
 
     //index vector for masking velocity
-    vec2 veloMask = vec2(1.0);
+    //vec2 veloMask = vec2(1.0);
 
     //free slip boundary condition
     vec2 prevVelo = texelFetch(velocity, fragCoord, 0).xy;
     vec2 grad = vec2(pL - pR, pT - pB) * gradScale;
+    
     vec2 newVelo = prevVelo - grad;
 
-
-    fragOut = (veloMask * newVelo);
+    fragOut = vec4(newVelo.x,newVelo.y, 0.5, 1.0);
 
 }

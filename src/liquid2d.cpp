@@ -7,7 +7,7 @@ const double FRAME_RATE_MS = 1000.0 / 60.0;
 //-------------------------------------------------------------------
                      //function prototypes
 float mouseConvert(int mouseVal, int windowScale);
-void updateBuffer(int index);
+void updateBuffer();
 bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 //-------------------------------------------------------------------
 
@@ -44,10 +44,10 @@ point4 verticesLine[2] = {
 
 // GLuint program[2]; // Not needed since we have shader struct
 // 0 is drawTexture, 1 is addedForce -> May need to restructure data structure to handle all shaders?
-GLuint VAO[2];
-GLuint buffer[2];
-GLuint vPosition[2];
-GLuint Projection[2];
+GLuint VAO;
+GLuint buffer;
+GLuint vPosition[6];
+GLuint Projection[6];
 
 // enum programs {drawTexture, addedForce};
 
@@ -58,7 +58,7 @@ GLuint Projection[2];
 Shaders temp = {0,0,0,0,0,0};
 Shaders* shaders = &temp;
 
-float viscosity;
+float viscosity = 0.5;
 float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Density;
 Field Divergence;
@@ -80,23 +80,28 @@ void init()
   
    printf("INIT");
 
-   glUseProgram(shaders->drawTexture);
-
    // Set up draw texture program
-   vPosition[0] = glGetAttribLocation(shaders->drawTexture, "vPosition");
-   glGenVertexArrays(1, &VAO[0]);
-   updateBuffer(0);
-   Projection[0] = glGetUniformLocation(shaders->drawTexture, "Projection");
-   
-   // Set up added force program
-   glUseProgram(shaders->addedForce);
-   vPosition[1] = glGetAttribLocation(shaders->addedForce, "vPosition");
-   glGenVertexArrays(1, &VAO[1]);
-   updateBuffer(1);
-   Projection[1] = glGetUniformLocation(shaders->addedForce, "Projection");
 
-  // addedForceFields = createPair(windowWidth, windowHeight);
-  // clearField(addedForceFields.foo, 1.0);
+   vPosition[0] = glGetAttribLocation(shaders->drawTexture, "vPosition");
+   vPosition[1] = glGetAttribLocation(shaders->advect, "vPosition");
+   vPosition[2] = glGetAttribLocation(shaders->jacobi, "vPosition");
+   vPosition[3] = glGetAttribLocation(shaders->divergence, "vPosition");
+   vPosition[4] = glGetAttribLocation(shaders->subtractGradient, "vPosition");
+   vPosition[5] = glGetAttribLocation(shaders->addedForce, "vPosition");
+   
+
+   Projection[0] = glGetUniformLocation(shaders->drawTexture, "Projection");
+   Projection[1] = glGetUniformLocation(shaders->advect, "Projection");
+   Projection[2] = glGetUniformLocation(shaders->jacobi, "Projection");
+   Projection[3] = glGetUniformLocation(shaders->divergence, "Projection");
+   Projection[4] = glGetUniformLocation(shaders->subtractGradient, "Projection");
+   Projection[5] = glGetUniformLocation(shaders->addedForce, "Projection");   
+
+   // Set up added force program
+   
+   glGenVertexArrays(1, &VAO);
+
+   updateBuffer();
 
    glEnable(GL_DEPTH_TEST);
 
@@ -112,6 +117,7 @@ void display(void)
    //dt = (std::clock() - prevTime)/(float)CLOCKS_PER_SEC;
    //prevTime = std::clock();
 
+   runtime();
    GLuint shaderHandle = shaders->drawTexture;
 
    // Clear output framebuffer
@@ -120,22 +126,23 @@ void display(void)
 
    // Draw texture
    glUseProgram(shaderHandle);
-   glBindVertexArray(VAO[0]); // Drawing square
-   glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+   glBindVertexArray(VAO); // Drawing square
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
    // Set uniforms
-   GLint fillColor = glGetUniformLocation(shaderHandle, "FillColor");
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
-   glUniform3f(fillColor, 1, 1, 1);
    glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
 
    // Bind texture and draw
+
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
-   glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+   
+   
    glDrawArrays(GL_TRIANGLES, 0, 6);
+   
    glBindTexture(GL_TEXTURE_2D, 0);
-
+      
    glutSwapBuffers();
    
 }
@@ -188,7 +195,7 @@ void mouseDrag(int x, int y) { // Add force
 //called every frame
 void update(void)
 {
-   //runtime();
+
 }
 
 //----------------------------------------------------------------------------
@@ -201,10 +208,25 @@ void reshape(int width, int height)
   
    glm::mat4 projection = glm::ortho(LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
    
+   int i = 0;
    glUseProgram(shaders->drawTexture);
-   glUniformMatrix4fv(Projection[0], 1, GL_FALSE, glm::value_ptr(projection));
+   glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
+  
+   glUseProgram(shaders->advect);
+   glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
+
+   glUseProgram(shaders->jacobi);
+   glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
+
+   glUseProgram(shaders->divergence);
+   glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
+
+   glUseProgram(shaders->subtractGradient);
+   glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
+
    glUseProgram(shaders->addedForce);
-   glUniformMatrix4fv(Projection[1], 1, GL_FALSE, glm::value_ptr(projection));
+   glUniformMatrix4fv(Projection[i], 1, GL_FALSE, glm::value_ptr(projection));
+   
 }
 //----------------------------------------------------------------------------
 //converts screen coordinates to window coordinates
@@ -219,24 +241,58 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
 }
 
 //rebinds VAO's
- void updateBuffer(int index){
+ void updateBuffer(){
 
      // Create and initialize a buffer object
-   glGenBuffers(1, &buffer[index]);
+   glGenBuffers(1, &buffer);
    /*########################################################################*/
          // Bind VAO
-         glBindVertexArray(VAO[index]);
+         glBindVertexArray(VAO);
          // Bind VBO to VAO
-         glBindBuffer(GL_ARRAY_BUFFER, buffer[index]);
+         glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
          glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
 
          // Set vPosition vertex attibute for shader(s)
-         glEnableVertexAttribArray(vPosition[index]);
-         glVertexAttribPointer(vPosition[index], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
+         assignAttrib();
    /*########################################################################*/
 
+}
+
+void assignAttrib(){
+   int i = 0;
+
+
+   glUseProgram(shaders->drawTexture);
+
+      glEnableVertexAttribArray(vPosition[i]);
+      glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+   glUseProgram(shaders->advect);
+
+      glEnableVertexAttribArray(vPosition[i]);
+      glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+   glUseProgram(shaders->jacobi);
+
+      glEnableVertexAttribArray(vPosition[i]);
+      glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+   glUseProgram(shaders->divergence);
+
+      glEnableVertexAttribArray(vPosition[i]);
+      glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+   glUseProgram(shaders->subtractGradient);
+
+      glEnableVertexAttribArray(vPosition[i]);
+      glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+   glUseProgram(shaders->addedForce);
+
+      glEnableVertexAttribArray(vPosition[i]);
+      glVertexAttribPointer(vPosition[i], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 }
 //----------------------------------------------------------------------------
 
@@ -245,12 +301,12 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 }
 
 //----------------------------------------------------------------------------
-// vector field . advection ...
+
 void runtime(){
    float  diffusionAlpha =(cellSize*cellSize) /(viscosity*dt);
    float  diffusionBeta = (4 + (cellSize*cellSize) /(viscosity*dt));
 
-   float  pressureAlpha =(cellSize*cellSize) * -1.0f;
+   float  pressureAlpha = (cellSize*cellSize) * -1.0f;
    float  pressureBeta = 4.0f;
 
    advect(Velocity.foo, Velocity.foo,Velocity.bar);
@@ -260,9 +316,9 @@ void runtime(){
       jacobi(Velocity.foo, Velocity.foo, Velocity.bar, diffusionAlpha,diffusionBeta);
       swapField(&Velocity);
    }
-   //add force here
 
    divergence(Velocity.foo, Divergence);
+   
    clearField(Pressure.foo, 0);
 
    for(int i = 0; i < jacobiIterations; ++i){
@@ -270,8 +326,8 @@ void runtime(){
       swapField(&Pressure);
    }
 
-   subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
-   swapField(&Velocity);
+    subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
+    swapField(&Velocity);
 
    // GPU Gems pseudocode:
    // Apply the first 3 operators in Equation 12.
@@ -286,7 +342,6 @@ void runtime(){
 
 
 void initFields(){
-   initShaders(shaders);
       std::cout << "-> init fields started" << "\n";
 
    Velocity = createPair(fieldWidth, fieldHeight);
@@ -351,8 +406,8 @@ void addedForce(Field velocity, Field destination) {
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocity.texture);
 
-   glBindVertexArray(VAO[0]);
-   glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+   glBindVertexArray(VAO);
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
    glDrawArrays(GL_TRIANGLES, 0, 6);;
    unbind();
 }
@@ -363,18 +418,20 @@ void advect(Field velocity, Field position, Field destination){
 
    glUseProgram(shaderHandle);
 
-   GLuint rdx = glGetUniformLocation(shaderHandle, "rdx");
+   GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
 
 
-   glUniform2f(rdx, 1.0f / cellSize, 1.0f / cellSize); // rdx is 1/dx and dy
+   glUniform2f(scale, 1.0f / fieldWidth, 1.0f / fieldHeight); // rdx is 1/dx and dy
+
    glUniform1f(timeStep, dt);
    glUniform1i(posTex, 1); // texture 1, a sampler2D.
    
    //bindframe buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    //set texture 0 to be the velocity field
+   
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocity.texture);
 

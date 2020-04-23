@@ -2,7 +2,7 @@
 
 out vec4 newX; //the advected position
 
-uniform vec2 rdx; // {1/width, 1/height}
+uniform vec2 Scale; // {1/field width, 1/field height}
 uniform float timeStep; //dt
 uniform sampler2D veloTex; //velocity texture
 uniform sampler2D posTex;// position texture.
@@ -19,15 +19,18 @@ using the texture parameters we set earlier.
 void main() 
 {
   vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
-  
+  vec2 textCoord = (gl_FragCoord.xy) * Scale; 
+
   //this gets the samples the value of velo tex at the window coordinates of the fragment.
   // u = the velocity of this fragment(or cell)
-  vec2 u = (texture(veloTex, rdx * fragCoord).xy); 
+  vec2 u = (texture(veloTex, Scale * fragCoord).xy); 
   //go to previous position.
   //prev pos is calculated using the 
-  vec2 prevPos =  rdx * (fragCoord - timeStep * u);
 
-//this gets the new advectd pos.
-  newX = texture(posTex, prevPos); 
+  
+  //vec2 prevPos =  rdx * (fragCoord - timeStep * u);
+  vec2 pos = textCoord - timeStep * Scale * u;
+  //this gets the new advectd pos.
+  newX = texture(posTex, pos); 
 }
 
