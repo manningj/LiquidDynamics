@@ -23,14 +23,22 @@ void main()
 
   //this gets the samples the value of velo tex at the window coordinates of the fragment.
   // u = the velocity of this fragment(or cell)
-  vec2 u = (texture(veloTex, Scale * fragCoord).xy); 
+  vec2 u = ((texture(veloTex, Scale * fragCoord).xy) - 0.5) * 10.f;; 
   //go to previous position.
   //prev pos is calculated using the 
 
   
   //vec2 prevPos =  rdx * (fragCoord - timeStep * u);
-  vec2 pos = textCoord - timeStep * Scale * u;
+  // vec2 pos = textCoord - timeStep * Scale * u;
+  vec2 pos = (fragCoord - timeStep * u) * Scale;
   //this gets the new advectd pos.
-  newX = texture(posTex, pos); 
+  //  
+
+  // if (u.x > 0.5 || u.y > 0.5) {
+    //newX = vec4(1.0);
+    // newX = vec4(0.5,0.5,0.5, 1.0);
+  // } else {
+    newX = vec4(texture(posTex, pos).xy, 0.5, 1.0);
+  // }
 }
 
