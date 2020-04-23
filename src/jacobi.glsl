@@ -32,6 +32,8 @@ void main(){
     //get center of b sample
     vec4 bC = texelFetch(b, fragCoord, 0);
 
-    xNew = (top + bot + right + left + alpha * bC) * rBeta;
+    xNew = ((top  + bot + right + left + (alpha * bC)) * rBeta );
+    //xNew = ((top  -0.5 + bot-0.5  + right-0.5  + left -0.5 + (alpha * (bC-0.5 ))) * rBeta) + 0.5 ;
+
 
 }//end jacobi main
