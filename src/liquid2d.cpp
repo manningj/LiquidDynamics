@@ -545,7 +545,7 @@ void addedForce(Field velocity, Field destination) {
    unbind();
 }
 
-void advect(Field velocity, Field position, Field destination){
+void advect(Field velocity, Field position, Field boundary,Field destination){
    
    GLuint shaderHandle = shaders->advect;
 
@@ -554,13 +554,13 @@ void advect(Field velocity, Field position, Field destination){
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
-
+   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0)); // rdx is 1/dx and dy
 
    glUniform1f(timeStep, dt);
    glUniform1i(posTex, 1); // texture 1, a sampler2D.
-   
+   glUniform1i (boundaryTex, 2);
    //bindframe buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    //set texture 0 to be the velocity field
@@ -573,13 +573,16 @@ void advect(Field velocity, Field position, Field destination){
    glBindTexture(GL_TEXTURE_2D, position.texture);
    //obstacles stuff here
    
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, boundary.texture);
+
    //use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
    unbind();
 }
 
-void jacobi(Field xField, Field bField, Field destination, float alphaParameter, float betaParameter){
+void jacobi(Field xField, Field bField, Field boundary,Field destination, float scale, float alphaParameter, float betaParameter){
 
    /*this gets called a number of times in a loop. 
       used for poisson pressure,
@@ -603,6 +606,7 @@ void jacobi(Field xField, Field bField, Field destination, float alphaParameter,
 
    GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
    GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
+      GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    //GLuint x = glGetUniformLocation(shaderHandle, "x");
    GLuint b = glGetUniformLocation(shaderHandle, "b");
@@ -610,6 +614,7 @@ void jacobi(Field xField, Field bField, Field destination, float alphaParameter,
    glUniform1f(alpha, alphaParameter);
    glUniform1f(rBeta, 1/betaParameter);
    glUniform1i(b, 1);
+   glUniform1i (boundaryTex, 2);
 
 
     //bindframe buffer to the destination field
@@ -624,6 +629,8 @@ void jacobi(Field xField, Field bField, Field destination, float alphaParameter,
    glBindTexture(GL_TEXTURE_2D, bField.texture);
    //obstacles stuff here
    
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, boundary.texture);
    //use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
@@ -631,7 +638,7 @@ void jacobi(Field xField, Field bField, Field destination, float alphaParameter,
 }
 
 
-void subtractGradient(Field velocityField, Field pressureField, Field destination){
+void subtractGradient(Field velocityField, Field pressureField, Field boundary, Field destination){
 
    GLuint shaderHandle = shaders->subtractGradient;
 
@@ -640,10 +647,12 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
   // GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
    GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
+   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
 
    glUniform1f(gradScale, 1/(fieldWidth-1.0));
    glUniform1i(pressure, 1);
+   glUniform1i (boundaryTex, 2);
 
    
 
@@ -658,7 +667,8 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, pressureField.texture);
    //obstacles stuff here
-   
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, boundary.texture);
    //use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
