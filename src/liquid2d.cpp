@@ -148,7 +148,7 @@ Shaders* shaders = &temp;
 float viscosity = 0.5f;
 float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Density;
-Field Divergence;
+Field Divergence, Boundaries;
 
 // Velocity settings when adding force
 const float VELOCITY_SCALE = 10.0f; // Lower number increases intensity of force
@@ -429,33 +429,33 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 //----------------------------------------------------------------------------
 
 void runtime(){
-   // float  diffusionAlpha =(cellSize*cellSize) /(viscosity*dt);
-   // float  diffusionBeta = (4 + (cellSize*cellSize) /(viscosity*dt));
+   float  diffusionAlpha =(cellSize*cellSize) /(viscosity*dt);
+   float  diffusionBeta = (4 + (cellSize*cellSize) /(viscosity*dt));
 
-   // float  pressureAlpha = (cellSize*cellSize) * -1.0f;
-   // float  pressureBeta = 4.0f;
+   float  pressureAlpha = (cellSize*cellSize) * -1.0f;
+   float  pressureBeta = 4.0f;
 
-   //advect(Velocity.foo, Velocity.foo,Velocity.bar);
-   //swapField(&Velocity);
+   advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar);
+   swapField(&Velocity);
 
-   // for(int i = 0; i < jacobiIterations; ++i){
-   //    jacobi(Velocity.foo, Velocity.foo, Velocity.bar, diffusionAlpha,diffusionBeta);
-   //    swapField(&Velocity);
-   // }
+   for(int i = 0; i < jacobiIterations; ++i){
+      jacobi(Velocity.foo, Velocity.foo, Velocity.bar, Boundaries, -1.0f, diffusionAlpha,diffusionBeta);
+      swapField(&Velocity);
+   }
 
-   // divergence(Velocity.foo, Divergence);
+   divergence(Velocity.foo, Divergence);
    
-   // clearField(Pressure.foo, 0);
+   clearField(Pressure.foo, 0);
 
-   // for(int i = 0; i < jacobiIterations; ++i){
-   //    jacobi(Pressure.foo, Divergence, Pressure.bar, pressureAlpha,pressureBeta);
-   //    swapField(&Pressure);
-   // }
+   for(int i = 0; i < jacobiIterations; ++i){
+      jacobi(Pressure.foo, Divergence, Pressure.bar,Boundaries, 1.0f, pressureAlpha,pressureBeta);
+      swapField(&Pressure);
+   }
 
-   //  subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
-   //  swapField(&Velocity);
+    subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
+    swapField(&Velocity);
 
-    boundaries(Velocity.foo, Velocity.foo, true);
+    //boundaries(Velocity.foo, Velocity.foo, true);
     //swapField(&Velocity);
 
    // boundaries(Pressure.foo, Pressure.bar, false);
@@ -486,7 +486,7 @@ void initFields(){
 
    Divergence = createField(fieldWidth, fieldHeight);
       std::cout << "-> init Divergence complete"<< "\n";
-
+   Boundaries = createField(fieldWidth, fieldHeight);
    initShaders(shaders);
       std::cout << "-> init shaders complete"<< "\n";
 }
