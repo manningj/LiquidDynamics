@@ -12,10 +12,10 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 //-------------------------------------------------------------------
 
 //constants and variables
-const GLfloat LEFT = -1.0f;
-const GLfloat RIGHT = 1.0f;
-const GLfloat TOP = 1.0f;
-const GLfloat BOTTOM = -1.0f;
+const GLfloat LEFT = -0.5f;
+const GLfloat RIGHT = 639.5f;
+const GLfloat TOP = -0.5f;
+const GLfloat BOTTOM = 639.5f;
 const GLfloat Z_NEAR = -1.0f;
 const GLfloat Z_FAR  = 1.0f;
 //boolean used for double clicking
@@ -24,27 +24,31 @@ bool mousePressed = false;
 const color4 clearColour = color4(0,0,0,1); //black background
 //--------------------------------------------------------------------
 
-point4 verticesSquare[6] = {
-  point4(-1.0,  1.0,  0.0, 1.0),
-  point4(-1.0, -1.0,  0.0, 1.0),
-  point4(1.0, -1.0,  0.0, 1.0),
-  point4(-1.0,  1.0, 0.0, 1.0),
-  point4(1.0, -1.0,  0.0, 1.0),
-  point4(1.0,  1.0,  0.0, 1.0)
-};
-point4 verticesLine[2]{
-    point4(0.0,  0.0,  0.0, 1.0),
-    point4(0.0,  0.0,  0.0, 1.0),
-};
+// point4 verticesSquare[6] = {
+//   point4(-1.0,  1.0,  0.0, 1.0),
+//   point4(-1.0, -1.0,  0.0, 1.0),
+//   point4(1.0, -1.0,  0.0, 1.0),
+//   point4(-1.0,  1.0, 0.0, 1.0),
+//   point4(1.0, -1.0,  0.0, 1.0),
+//   point4(1.0,  1.0,  0.0, 1.0)
+// };
 
-point4 verticesBoundary[6] = {
-  point4(-1.0,  1.0,  0.1, 1.0),
-  point4(-1.0, -1.0,  0.1, 1.0),
-  point4(1.0, -1.0,  0.1, 1.0),
-  point4(-1.0,  1.0, 0.1, 1.0),
-  point4(1.0, -1.0,  0.1, 1.0),
-  point4(1.0,  1.0,  0.1, 1.0)
-};
+// point4 verticesLine[2]{
+//     point4(0.0,  0.0,  0.0, 1.0),
+//     point4(0.0,  0.0,  0.0, 1.0),
+// };
+
+// point4 verticesBoundary[6] = {
+//   point4(-1.0,  1.0,  0.1, 1.0),
+//   point4(-1.0, -1.0,  0.1, 1.0),
+//   point4(1.0, -1.0,  0.1, 1.0),
+//   point4(-1.0,  1.0, 0.1, 1.0),
+//   point4(1.0, -1.0,  0.1, 1.0),
+//   point4(1.0,  1.0,  0.1, 1.0)
+// };
+
+
+
 //point4 verticesBoundary[8] = {
 //    point4(-1.0,  1.0,  0.0, 1.0),
 //    point4(-1.0,  -1.0,  0.0, 1.0),
@@ -58,6 +62,56 @@ point4 verticesBoundary[6] = {
 //    point4(1.0,  1.0,  0.0, 1.0),
 //    point4(-1.0,  1.0,  0.0, 1.0),
 //};
+
+
+
+
+point4 verticesSquare[6] = {
+  point4(1.0,  638.0,  0.0, 1.0),
+  point4(1.0, 1.0,  0.0, 1.0),
+  point4(638.0, 1.0,  0.0, 1.0),
+  point4(1.0,  638.0, 0.0, 1.0),
+  point4(638.0, 1.0,  0.0, 1.0),
+  point4(638.0,  638.0,  0.0, 1.0)
+};
+
+point4 verticesLine[2]{
+    point4(0.0,  0.0,  0.0, 1.0),
+    point4(0.0,  0.0,  0.0, 1.0),
+};
+
+point4 verticesBoundary[6] = {
+point4(0.0,  639.0,  0.0, 1.0),
+  point4(0.0, 0.0,  0.0, 1.0),
+  point4(639.0, 0.0,  0.0, 1.0),
+  point4(0.0,  639.0, 0.0, 1.0),
+  point4(639.0, 0.0,  0.0, 1.0),
+  point4(639.0,  639.0,  0.0, 1.0)
+
+};
+
+
+// point4(0.0,  639.0,  0.0, 1.0),
+//   point4(0.0, 0.0,  0.0, 1.0),
+//   point4(639.0, 0.0,  0.0, 1.0),
+//   point4(0.0,  639.0, 0.0, 1.0),
+//   point4(639.0, 0.0,  0.0, 1.0),
+//   point4(639.0,  639.0,  0.0, 1.0)
+
+// point4 verticesBoundary[8] = {
+//    point4(0.0,  639.0,  0.0, 1.0),
+//    point4(0.0,  0.0,  0.0, 1.0),
+
+//    point4(0.0,  0.0,  0.0, 1.0),
+//    point4(639.0,  0.0,  0.0, 1.0),
+
+//    point4(639.0,  0.0,  0.0, 1.0),
+//    point4(639.0,  639.0,  0.0, 1.0),
+
+//    point4(639.0,  639.0,  0.0, 1.0),
+//    point4(0.0,  639.0,  0.0, 1.0),
+//};
+
 
 //-----------------------------------------------------------------------
 
@@ -76,10 +130,10 @@ GLuint Projection[7];
 GLuint VAOs[2];
 GLuint buffers[2];
 // GLuint program, vPosition;
-Shaders temp = {0,0,0,0,0,0};
+Shaders temp = {0,0,0,0,0,0,0};
 Shaders* shaders = &temp;
 
-float viscosity = 300.f;
+float viscosity = 0.5f;
 float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Density;
 Field Divergence;
@@ -242,7 +296,7 @@ void update(void)
 //called on window resize
 void reshape(int width, int height)
 {
-   glViewport(0, 0, width, height);
+   glViewport(0, 0, windowWidth, windowHeight);
    
   
    glm::mat4 projection = glm::ortho(LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
@@ -679,7 +733,7 @@ void boundaries(Field stateField, Field destination, bool isVelo){
    // glm::ivec2(1, 0), 
    // glm::ivec2(0, 1),
    // glm::ivec2(-1, 0),
-   // glm::ivec2(0, -1)
+   // glm::ivec2(0, -1)`
 
    // };
 
@@ -697,7 +751,7 @@ void boundaries(Field stateField, Field destination, bool isVelo){
    // glBindVertexArray(VAOs[1]);
    // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
   //glBindTexture(GL_TEXTURE_2D, 0);
-   glDrawArrays(GL_LINES, 0, 6);
+   glDrawArrays(GL_LINES, 0, 8);
 
 
 
