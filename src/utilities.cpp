@@ -19,6 +19,9 @@ void initShaders(Shaders* shaders) {
 
 	shaders->addedForce = InitShader("vshader.glsl", "addedForce.glsl");
 		std::cout << "->-> init addedForce complete\n";
+	
+	shaders->boundaries = InitShader("vshader.glsl", "boundaries.glsl");
+		std::cout << "->-> init addedForce complete\n";
 }
 
 Field createField(GLint width, GLint height) {

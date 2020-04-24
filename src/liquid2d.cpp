@@ -37,19 +37,27 @@ point4 verticesLine[2]{
     point4(0.0,  0.0,  0.0, 1.0),
 };
 
-point4 verticesBoundary[8] = {
-    point4(-1.0,  1.0,  0.0, 1.0),
-    point4(-1.0,  -1.0,  0.0, 1.0),
-
-    point4(-1.0,  -1.0,  0.0, 1.0),
-    point4(1.0,  -1.0,  0.0, 1.0),
-
-    point4(1.0,  -1.0,  0.0, 1.0),
-    point4(1.0,  1.0,  0.0, 1.0),
-
-    point4(1.0,  1.0,  0.0, 1.0),
-    point4(-1.0,  1.0,  0.0, 1.0),
+point4 verticesBoundary[6] = {
+  point4(-1.0,  1.0,  0.1, 1.0),
+  point4(-1.0, -1.0,  0.1, 1.0),
+  point4(1.0, -1.0,  0.1, 1.0),
+  point4(-1.0,  1.0, 0.1, 1.0),
+  point4(1.0, -1.0,  0.1, 1.0),
+  point4(1.0,  1.0,  0.1, 1.0)
 };
+//point4 verticesBoundary[8] = {
+//    point4(-1.0,  1.0,  0.0, 1.0),
+//    point4(-1.0,  -1.0,  0.0, 1.0),
+//
+//    point4(-1.0,  -1.0,  0.0, 1.0),
+//    point4(1.0,  -1.0,  0.0, 1.0),
+//
+//    point4(1.0,  -1.0,  0.0, 1.0),
+//    point4(1.0,  1.0,  0.0, 1.0),
+//
+//    point4(1.0,  1.0,  0.0, 1.0),
+//    point4(-1.0,  1.0,  0.0, 1.0),
+//};
 
 //-----------------------------------------------------------------------
 
@@ -112,10 +120,11 @@ void init()
    Projection[5] = glGetUniformLocation(shaders->addedForce, "Projection");  
    Projection[6] = glGetUniformLocation(shaders->boundaries, "Projection");   
  
+   
 
    // Set up added force program
    
-   glGenVertexArrays(2, VAOs);
+   //glGenVertexArrays(2, VAOs);
 
    updateBuffer();
 
@@ -156,9 +165,23 @@ void display(void)
    
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   
-   glBindTexture(GL_TEXTURE_2D, 0);
-      
+
+
+   // DRAW SECOND SQUARE
+
+   // shaderHandle = shaders->boundaries;
+   // glUseProgram(shaderHandle);
+   // glBindVertexArray(VAOs[1]);
+   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+   // //GLint fillColor = glGetUniformLocation(program2, "FillColor");
+   // //GLint scale = glGetUniformLocation(program2, "Scale");
+   // //printf("%d %d\n", fillColor, scale);
+   // //glUniform3f(fillColor, 1, 1, 1);
+   // //glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
+   // glBindTexture(GL_TEXTURE_2D, 0);
+   // glDrawArrays(GL_LINES, 0, 6);
+
+
    glutSwapBuffers();
    
 }
@@ -263,6 +286,7 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
 //rebinds VAO's
  void updateBuffer(){
 
+   glGenVertexArrays(2, VAOs);
      // Create and initialize a buffer object
    glGenBuffers(2, buffers);
    /*########################################################################*/
@@ -272,17 +296,39 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
          glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 
          glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
+      assignAttrib();
+         
+         // glBindVertexArray(VAOs[1]);
+         // // Bind VBO to VAO
+         // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+
+         // glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBoundary), verticesBoundary, GL_STATIC_DRAW);
+
+         // Set vPosition vertex attibute for shader(s)
 
          
+
+         
+   glUseProgram(shaders->boundaries);
+   vPosition[6] = glGetAttribLocation(shaders->boundaries, "vPosition");
+//   glGenVertexArrays(1, &VAO2);
+   //vPosition[6] = glGetUniformLocation(shaders->boundaries, "Projection");
+
+//   glGenBuffers(1, &buffer2);
+   /*########################################################################*/
+         // Bind VAO
          glBindVertexArray(VAOs[1]);
          // Bind VBO to VAO
          glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
 
          glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBoundary), verticesBoundary, GL_STATIC_DRAW);
-
          // Set vPosition vertex attibute for shader(s)
+         glEnableVertexAttribArray(vPosition[6]);
+         glVertexAttribPointer(vPosition[6], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
-         assignAttrib();
+
+
+
          glBindVertexArray(VAOs[0]);
          glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 
@@ -294,8 +340,8 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
 void assignAttrib(){
    int i = 0;
    
-   glBindVertexArray(VAOs[0]);
-   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+   // glBindVertexArray(VAOs[0]);
+   // glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 
 
    glUseProgram(shaders->drawTexture);
@@ -328,13 +374,13 @@ void assignAttrib(){
       glEnableVertexAttribArray(vPosition[i]);
       glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
-   glBindVertexArray(VAOs[1]);
-   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+   // glBindVertexArray(VAOs[1]);
+   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
    
-   glUseProgram(shaders->boundaries);
+   // glUseProgram(shaders->boundaries);
 
-      glEnableVertexAttribArray(vPosition[i]);
-      glVertexAttribPointer(vPosition[i], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+   //    glEnableVertexAttribArray(vPosition[i]);
+   //    glVertexAttribPointer(vPosition[i], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 }
 //----------------------------------------------------------------------------
 
@@ -351,8 +397,8 @@ void runtime(){
    // float  pressureAlpha = (cellSize*cellSize) * -1.0f;
    // float  pressureBeta = 4.0f;
 
-   advect(Velocity.foo, Velocity.foo,Velocity.bar);
-   swapField(&Velocity);
+   //advect(Velocity.foo, Velocity.foo,Velocity.bar);
+   //swapField(&Velocity);
 
    // for(int i = 0; i < jacobiIterations; ++i){
    //    jacobi(Velocity.foo, Velocity.foo, Velocity.bar, diffusionAlpha,diffusionBeta);
@@ -371,8 +417,8 @@ void runtime(){
    //  subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
    //  swapField(&Velocity);
 
-   // boundaries(Velocity.foo, Velocity.bar, true);
-   // swapField(&Velocity);
+    boundaries(Velocity.foo, Velocity.foo, true);
+    //swapField(&Velocity);
 
    // boundaries(Pressure.foo, Pressure.bar, false);
    // swapField(&Pressure);
@@ -618,36 +664,50 @@ void boundaries(Field stateField, Field destination, bool isVelo){
    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
 
 
-   GLuint offset =   glGetUniformLocation(shaderHandle, "Offset");
+   // GLuint offset =   glGetUniformLocation(shaderHandle, "Offset");
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
-   GLuint isVelocity = glGetUniformLocation(shaderHandle, "isVelocity");
+   // GLuint isVelocity = glGetUniformLocation(shaderHandle, "isVelocity");
 
 
 
 
    glUniform2f(scale, 1.0f/fieldWidth, 1.0f/fieldHeight);
-   glUniform1i(isVelocity, isVelo);
+   // glUniform1i(isVelocity, isVelo);
    
-   glm::ivec2 offsetArray[4] = {
+   // glm::ivec2 offsetArray[4] = {
 
-   glm::ivec2(1, 0), 
-   glm::ivec2(0, 1),
-   glm::ivec2(-1, 0),
-   glm::ivec2(0, -1)
+   // glm::ivec2(1, 0), 
+   // glm::ivec2(0, 1),
+   // glm::ivec2(-1, 0),
+   // glm::ivec2(0, -1)
 
-   };
+   // };
 
-   glm::ivec2 off;
+   // glm::ivec2 off;
       glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
       
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, stateField.texture);
 
-   for(int i = 0; i < 4; i++){
-      off = offsetArray[i];
-      glUniform2i(offset, off.x, off.y);
-      glDrawArrays(GL_LINES,i * sizeof(point4), 2);
-   }
+
+
+
+   // shaderHandle = shaders->boundaries;
+   // glUseProgram(shaderHandle);
+   // glBindVertexArray(VAOs[1]);
+   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+  //glBindTexture(GL_TEXTURE_2D, 0);
+   glDrawArrays(GL_LINES, 0, 6);
+
+
+
+
+
+   // for(int i = 0; i < 4; i++){
+   //    off = offsetArray[i];
+   //    glUniform2i(offset, off.x, off.y);
+   //    glDrawArrays(GL_LINES,i * sizeof(point4), 2);
+   // }
    unbind();
 
    glBindVertexArray(VAOs[0]);

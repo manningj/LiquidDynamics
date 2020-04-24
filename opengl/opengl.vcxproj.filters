@@ -61,5 +61,8 @@
     <None Include="..\src\subtractGradient.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\src\boundaries.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
