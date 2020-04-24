@@ -233,11 +233,11 @@ void display(void)
 
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
-   glEnable(GL_BLEND);
-   glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
+   //glEnable(GL_BLEND);
+   glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   glDisable(GL_BLEND);
+  // glDisable(GL_BLEND);
 
    // //DRAW SECOND SQUARE
 
@@ -309,12 +309,12 @@ void mouse(int button, int state, int x, int y)
 void mouseDrag(int x, int y) { // Add force
    verticesLine[1] = point4((float)x-1.0, (float)windowHeight- 1.0  -(float)y, 0.0, 1.0);
    printf("%d, %d\n", x-1, windowHeight - y-1);
-   // addedInk(Ink.foo, Ink.bar);
-   // swapField(&Ink);
+   addedInk(Ink.foo, Ink.bar);
+   swapField(&Ink);
    
-   // addedForce(Velocity.foo, Velocity.bar);
-   // swapField(&Velocity);
-   // verticesLine[0] = verticesLine[1]; // Start point for next force
+   addedForce(Velocity.foo, Velocity.bar);
+   swapField(&Velocity);
+   verticesLine[0] = verticesLine[1]; // Start point for next force
 }
 
 //----------------------------------------------------------------------------
@@ -483,31 +483,29 @@ void runtime(){
    swapField(&Ink);
 
    for(int i = 0; i < jacobiIterations; ++i){
-      jacobi(Velocity.foo, Velocity.foo, Velocity.bar, Boundaries, -1.0f, diffusionAlpha,diffusionBeta);
+      jacobi(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar ,-1.0f, diffusionAlpha,diffusionBeta);
       swapField(&Velocity);
    }
 
-   addedInk(Ink.foo, Ink.bar);
-   swapField(&Ink);
+   // addedInk(Ink.foo, Ink.bar);
+   // swapField(&Ink);
    
-   addedForce(Velocity.foo, Velocity.bar);
-   swapField(&Velocity);
-   verticesLine[0] = verticesLine[1]; // Start point for next force
+   // addedForce(Velocity.foo, Velocity.bar);
+   // swapField(&Velocity);
+   // verticesLine[0] = verticesLine[1]; // Start point for next force
 
    divergence(Velocity.foo, Boundaries, Divergence);
    
    clearField(Pressure.foo, 0);
 
    for(int i = 0; i < jacobiIterations; ++i){
-      jacobi(Pressure.foo, Divergence, Pressure.bar,Boundaries, 1.0f, pressureAlpha,pressureBeta);
+      jacobi(Pressure.foo, Divergence, Boundaries, Pressure.bar, 1.0f, pressureAlpha,pressureBeta);
       swapField(&Pressure);
    }
 
     subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
     swapField(&Velocity);
    
-
-
 }
 
 void initFields(){
@@ -602,7 +600,7 @@ void advect(Field velocity, Field position, Field boundary,Field destination, fl
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldWidth)); // rdx is 1/dx and dy
+   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight)); // rdx is 1/dx and dy
 
    glUniform1f(timeStep, dt);
    glUniform1f(dissipation, dissipationVal);
@@ -795,7 +793,7 @@ void addedInk(Field canvas, Field destination) {
     glUniform1f(inkRadiusPtr, inkRadius);
     glUniform1f(inkStrengthPtr, inkStrength);
     glUniform2f(inkPosition, verticesLine[0].x, verticesLine[0].y);
-    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldWidth));
+    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight));
 
     glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    

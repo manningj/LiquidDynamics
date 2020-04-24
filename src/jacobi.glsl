@@ -21,6 +21,7 @@ uniform sampler2D boundaryTex;
 //              b = velocity
 
 void main(){
+    
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
 
     //get left, right, bottom, top samples.
@@ -60,7 +61,10 @@ void main(){
     //get center of b sample
     vec4 bC = texelFetch(b, fragCoord, 0);
 
-    xNew = ((top + bot + right + left + (alpha * bC)) * rBeta );
+   // vec2 temp = (top.xy + bot.xy + right.xy + left.xy + (alpha * bC.xy)) * rBeta ;
+
+   // xNew = vec4(temp.xy, 0.5, 1.0);
+  xNew = ((top + bot + right + left + (alpha * bC)) * rBeta );
  
 
 }//end jacobi main

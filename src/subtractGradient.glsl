@@ -12,6 +12,13 @@ void main(){
 
     ivec2 fragCoord = ivec2 (gl_FragCoord.xy);
 
+    vec3 bC  = texelFetch(boundaryTex, fragCoord, 0).xyz;
+
+    if(bC.z < 0){
+        fragOut = vec4(0.5f, 0.5f, 0.5, 1.0f);
+        return;
+    }
+
     //we need to get the neighbouring pressure values.
 
     float pT = texelFetchOffset(pressure, fragCoord, 0, ivec2(0, 1)).r;

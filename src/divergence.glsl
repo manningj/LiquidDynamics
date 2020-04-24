@@ -1,6 +1,6 @@
 #version 150
 
-out float fragDivergence;
+out vec4 fragDivergence;
 
 uniform sampler2D velocity;
 uniform sampler2D boundaryTex;
@@ -25,7 +25,8 @@ void main(){
     if(boundaryBot.z == 1.0){vB = vec2(0.5f);}
     if(boundaryRight.z == 1.0){vR = vec2(0.5f);}
     if(boundaryLeft.z == 1.0){vL = vec2(0.5f);}
+    
+    float red = halfrdx * ((vR.x - vL.x) + (vT.y - vB.y));
 
-
-    fragDivergence = halfrdx * ((vR.x - vL.x) + (vT.y - vB.y));
+    fragDivergence = vec4(red,0.0, 0.0, 1.0);
 }
