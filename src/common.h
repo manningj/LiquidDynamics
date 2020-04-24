@@ -24,12 +24,12 @@
 #define windowHeight 640
 #define fieldWidth windowWidth
 #define fieldHeight windowHeight
-#define inkDissipation 0.99f
+#define inkDissipation 0.97f
 //#define fieldWidth (windowWidth/2)
 //#define fieldHeight (windowHeight/2)
  
 
- #define jacobiIterations 40
+ #define jacobiIterations 80
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -229,12 +229,12 @@ void display(void)
 
    // Set uniforms
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
-   glUniform2f(scale, 1.0f / (windowWidth-1.0), 1.0f / (windowHeight - 1.0)); // Minus by one to convert 0-639 to 0-1
+   glUniform2f(scale, 1.0f / (windowWidth), 1.0f / (windowHeight)); // Minus by one to convert 0-639 to 0-1
 
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
    glEnable(GL_BLEND);
-   glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
+   glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
    glDisable(GL_BLEND);
@@ -296,7 +296,7 @@ void mouse(int button, int state, int x, int y)
    //left button click
    if(button == GLUT_LEFT_BUTTON) {
       // Get initial point for adding force
-      verticesLine[0] = point4((float)x, (float)windowHeight - 1.0 - (float)y, 0.0, 1.0);
+      verticesLine[0] = point4((float)x-1.0, (float)windowHeight -1.0 -(float)y, 0.0, 1.0);
    }
    //right button click
    if(button == GLUT_RIGHT_BUTTON) {
@@ -307,14 +307,14 @@ void mouse(int button, int state, int x, int y)
 //----------------------------------------------------------------------------
 
 void mouseDrag(int x, int y) { // Add force
-   verticesLine[1] = point4((float)x, (float)windowHeight-1.0-(float)y, 0.0, 1.0);
-   printf("%d, %d\n", x, windowHeight - 1 - y);
-   addedInk(Ink.foo, Ink.bar);
-   swapField(&Ink);
+   verticesLine[1] = point4((float)x-1.0, (float)windowHeight- 1.0  -(float)y, 0.0, 1.0);
+   printf("%d, %d\n", x-1, windowHeight - y-1);
+   // addedInk(Ink.foo, Ink.bar);
+   // swapField(&Ink);
    
-   addedForce(Velocity.foo, Velocity.bar);
-   swapField(&Velocity);
-   verticesLine[0] = verticesLine[1]; // Start point for next force
+   // addedForce(Velocity.foo, Velocity.bar);
+   // swapField(&Velocity);
+   // verticesLine[0] = verticesLine[1]; // Start point for next force
 }
 
 //----------------------------------------------------------------------------
@@ -466,7 +466,7 @@ void runtime(){
    // Now apply the projection operator to the result.
    // p = computePressure(u);
    // u = subtractPressureGradient(u, p); 
-   float v = viscosity * fieldWidth;
+   float v = viscosity;
 
    float  diffusionAlpha =(cellSize*cellSize) /(v*dt);
    float  diffusionBeta = (4 + (cellSize*cellSize) /(v*dt));
@@ -486,6 +486,13 @@ void runtime(){
       jacobi(Velocity.foo, Velocity.foo, Velocity.bar, Boundaries, -1.0f, diffusionAlpha,diffusionBeta);
       swapField(&Velocity);
    }
+
+   addedInk(Ink.foo, Ink.bar);
+   swapField(&Ink);
+   
+   addedForce(Velocity.foo, Velocity.bar);
+   swapField(&Velocity);
+   verticesLine[0] = verticesLine[1]; // Start point for next force
 
    divergence(Velocity.foo, Boundaries, Divergence);
    
@@ -563,7 +570,7 @@ void addedForce(Field velocity, Field destination) {
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
-   glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
+   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldWidth));
 
    printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    printf("timeStep: %f,\n", dt);

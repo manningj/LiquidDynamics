@@ -49,8 +49,8 @@ void main()
     // NEED TO ALTER!!!!! (look at the first commented section of the boundaries shader)
 
     //newX = isBoundary*vec4(texture(posTex, pos).xy, 0.5, 1.0);
-    
-    newX = vec4(dissipation *texture(posTex, pos).xyz, 1.0);
+    vec3 newU = texture(posTex, pos).xyz;
+    newX = vec4(dissipation *newU.xyz, 1.0);
 
 
 

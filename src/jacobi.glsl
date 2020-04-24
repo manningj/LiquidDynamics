@@ -39,7 +39,7 @@ void main(){
     vec4 centerV = (center * 2.0f) -1.0f; //convert to (-1, 1)
     
     centerV = (centerV * Scale); //invert if velocity 
-    centerV = (centerV + 1.0f)/2.0f; // c[o]nvert back to texture range (0,1)
+    centerV = (centerV + 1.0f)/2.0f; // convert back to texture range (0,1)
     
     center = centerV;
     
@@ -60,7 +60,7 @@ void main(){
     //get center of b sample
     vec4 bC = texelFetch(b, fragCoord, 0);
 
-    xNew = ((top  + bot + right + left + (alpha * bC)) * rBeta );
-
+    xNew = ((top + bot + right + left + (alpha * bC)) * rBeta );
+ 
 
 }//end jacobi main
