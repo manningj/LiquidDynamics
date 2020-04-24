@@ -101,10 +101,10 @@ void runtime();
 void assignAttrib();
 void initFields();
 void addedForce(Field velocity, Field destination);
-void advect(Field velocity, Field pressure, Field destination);
-void subtractGradient(Field velocity, Field pressure, Field destination);
+void advect(Field velocity, Field pressure, Field boundary, Field destination);
+void subtractGradient(Field velocity, Field pressure,Field boundary, Field destination);
 void divergence(Field velocityField, Field destination);
-void jacobi(Field xField, Field bField, Field destination,float alphaParameter, float betaParameter);
+void jacobi(Field xField, Field bField,Field boundary, Field destination,float scale, float alphaParameter, float betaParameter);
 
 void boundaries(Field destination);
 #endif

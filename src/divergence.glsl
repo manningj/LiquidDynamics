@@ -15,5 +15,6 @@ void main(){
     vec2 vR = texelFetchOffset(velocity, fragCoord, 0, ivec2(1, 0)).xy;
     vec2 vL = texelFetchOffset(velocity, fragCoord, 0, ivec2(-1, 0)).xy;
 
+
     fragDivergence = halfrdx * ((vR.x - vL.x) + (vT.y - vB.y));
 }
