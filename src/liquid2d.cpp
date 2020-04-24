@@ -229,12 +229,12 @@ void display(void)
 
    // Set uniforms
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
-   glUniform2f(scale, 1.0f / (windowWidth-1.0), 1.0f / (windowHeight - 1.0)); // Minus by one to convert 0-639 to 0-1
+   glUniform2f(scale, 1.0f / (windowWidth), 1.0f / (windowHeight)); // Minus by one to convert 0-639 to 0-1
 
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
    glEnable(GL_BLEND);
-   glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
+   glBindTexture(GL_TEXTURE_2D, Divergence.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
    glDisable(GL_BLEND);
@@ -563,13 +563,13 @@ void addedForce(Field velocity, Field destination) {
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
-   glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
+   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldWidth));
 
    printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    printf("timeStep: %f,\n", dt);
    printf("impulseRadius: %f\n", forceRadius);
    printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
-   printf("scale: %f, %f\n\n", 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
+   printf("scale: %f, %f\n\n", 1.0f / (fieldWidth), 1.0f / (fieldWidth));
 
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
