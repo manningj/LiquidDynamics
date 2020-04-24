@@ -6,6 +6,9 @@ uniform vec2 Scale; // {1/field width, 1/field height}
 uniform float timeStep; //dt
 uniform sampler2D veloTex; //velocity texture
 uniform sampler2D posTex;// position texture.
+uniform sampler2D boundaryTex;
+
+
 // formula is q(x,t + dt) = q(x - u(x,t)dt,t)
 
 /*
@@ -19,7 +22,15 @@ using the texture parameters we set earlier.
 void main() 
 {
   vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
-  vec2 textCoord = (gl_FragCoord.xy) * Scale; 
+
+  vec3 boundaryCoord = texture(boundaryTex, Scale * fragCoord);
+  float isBoundary = 1.0;
+  if(boundaryCoord.z == 1.0){
+    isBoundary = -1.0;
+      vec2 offsets = (((boundaryCoord.xy) *2) -1);
+      fragCoord = fragCoord + offsets;
+      
+  }
 
   //this gets the samples the value of velo tex at the window coordinates of the fragment.
   // u = the velocity of this fragment(or cell)
@@ -38,7 +49,7 @@ void main()
     //newX = vec4(1.0);
     // newX = vec4(0.5,0.5,0.5, 1.0);
   // } else {
-    newX = vec4(texture(posTex, pos).xy, 0.5, 1.0);
+    newX = isBoundary*vec4(texture(posTex, pos).xy, 0.5, 1.0);
   // }
 }
 
