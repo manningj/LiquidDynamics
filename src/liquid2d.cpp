@@ -71,12 +71,12 @@ const color4 clearColour = color4(0,0,0,1); //black background
 // };
 
 point4 verticesSquare[6] = {
-  point4(0.0,  639.0,  0.0, 1.0),
+  point4(0.0,  640.0,  0.0, 1.0),
   point4(0.0, 0.0,  0.0, 1.0),
-  point4(639.0, 0.0,  0.0, 1.0),
-  point4(0.0,  639.0, 0.0, 1.0),
-  point4(639.0, 0.0,  0.0, 1.0),
-  point4(639.0,  639.0,  0.0, 1.0)
+  point4(640.0, 0.0,  0.0, 1.0),
+  point4(0.0,  640.0, 0.0, 1.0),
+  point4(640.0, 0.0,  0.0, 1.0),
+  point4(640.0,  640.0,  0.0, 1.0)
 };
 
 point4 verticesLine[2]{
@@ -122,8 +122,8 @@ point4 verticesLine[2]{
 // 0 is drawTexture, 1 is addedForce -> May need to restructure data structure to handle all shaders?
 // GLuint VAO;
 // GLuint buffer;
-GLuint vPosition[7];
-GLuint Projection[7];
+GLuint vPosition[8];
+GLuint Projection[8];
 
 // enum programs {drawTexture, addedForce};
 
@@ -131,13 +131,29 @@ GLuint Projection[7];
 GLuint VAOs[2];
 GLuint buffers[2];
 // GLuint program, vPosition;
-Shaders temp = {0,0,0,0,0,0,0};
+Shaders temp = {0,0,0,0,0,0,0,0};
 Shaders* shaders = &temp;
 
 float viscosity = 0.5f;
 float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Ink, Density;
 Field Boundaries, Divergence;
+
+float inkRadius = 25.0f;
+color3 inkColors[10] = {
+   color3(1.0,1.0,1.0), // White
+   color3(1.0,0.0,0.0), // Red
+   color3(1.0,0.5,0.0), // Orange
+   color3(1.0,1.0,0.0), // Yellow
+   color3(0.0,1.0,0.0), // Green
+   color3(0.0,1.0,1.0), // Light Blue
+   color3(0.0,0.0,1.0), // Blue
+   color3(0.5,0.2,1.0), // Purple
+   color3(1.0,0.6,0.8), // Pink
+   color3(0.8,0.7,0.6), // Beige
+};
+float inkStrength = 0.15;
+int selectedColor = 0;
 
 // Velocity settings when adding force
 const float VELOCITY_SCALE = 10.0f; // Lower number increases intensity of force
@@ -165,6 +181,7 @@ void init()
    vPosition[4] = glGetAttribLocation(shaders->subtractGradient, "vPosition");
    vPosition[5] = glGetAttribLocation(shaders->addedForce, "vPosition");
    vPosition[6] = glGetAttribLocation(shaders->boundaries, "vPosition");
+   vPosition[7] = glGetAttribLocation(shaders->addedInk, "vPosition");
 
    Projection[0] = glGetUniformLocation(shaders->drawTexture, "Projection");
    Projection[1] = glGetUniformLocation(shaders->advect, "Projection");
@@ -173,6 +190,7 @@ void init()
    Projection[4] = glGetUniformLocation(shaders->subtractGradient, "Projection");
    Projection[5] = glGetUniformLocation(shaders->addedForce, "Projection");  
    Projection[6] = glGetUniformLocation(shaders->boundaries, "Projection");   
+   Projection[7] = glGetUniformLocation(shaders->addedInk, "Projection");   
  
    // Set up added force program
    
@@ -215,7 +233,7 @@ void display(void)
 
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, Boundaries.texture);
+   glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -237,7 +255,20 @@ void keyboard(unsigned char key, int x, int y)
       //spacebar, in case we want it
       //swapField(&Boundaries);
       break;
+   case '0':
+   case '1':
+   case '2':
+   case '3':
+   case '4':
+   case '5':
+   case '6':
+   case '7':
+   case '8':
+   case '9':
+      selectedColor = key - '0';
+      break;
    }
+
 }
 
 //----------------------------------------------------------------------------
@@ -260,6 +291,8 @@ void mouse(int button, int state, int x, int y)
 void mouseDrag(int x, int y) { // Add force
    verticesLine[1] = point4((float)x, (float)windowHeight-1.0-(float)y, 0.0, 1.0);
    printf("%d, %d\n", x, windowHeight - 1 - y);
+   addedInk(Ink.foo, Ink.bar);
+   swapField(&Ink);
    addedForce(Velocity.foo, Velocity.bar);
    swapField(&Velocity);
    verticesLine[0] = verticesLine[1]; // Start point for next force
@@ -303,8 +336,10 @@ void reshape(int width, int height)
    glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
 
    glUseProgram(shaders->boundaries);
+   glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
+
+   glUseProgram(shaders->addedInk);
    glUniformMatrix4fv(Projection[i], 1, GL_FALSE, glm::value_ptr(projection));
-   
 }
 //----------------------------------------------------------------------------
 //converts screen coordinates to window coordinates
@@ -388,6 +423,11 @@ void assignAttrib(){
 
       glEnableVertexAttribArray(vPosition[i]);
       glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+   glUseProgram(shaders->addedInk);
+
+      glEnableVertexAttribArray(vPosition[i]);
+      glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 }
 //----------------------------------------------------------------------------
 
@@ -458,14 +498,14 @@ void initFields(){
 
    Ink = createPair(fieldWidth, fieldHeight);
       std::cout << "-> init Ink complete"<< "\n";
-   clearField(Ink.foo, 1.0);
+   clearField(Ink.foo, 0.0);
 
    Divergence = createField(fieldWidth, fieldHeight);
       std::cout << "-> init Divergence complete"<< "\n";
 
    Boundaries = createField(fieldWidth, fieldHeight);
       std::cout << "-> init Boundaries complete" << "\n";
-      clearField(Boundaries, 0.0);
+      clearField(Boundaries, 0.5);
 
    initShaders(shaders);
       std::cout << "-> init shaders complete"<< "\n";
@@ -709,3 +749,30 @@ void boundaries(Field destination){
    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 }
 
+void addedInk(Field canvas, Field destination) {
+   GLuint shaderHandle = shaders->addedInk;
+   
+   glUseProgram(shaderHandle);
+
+    GLint newInk = glGetUniformLocation(shaderHandle, "NewInk");
+    GLint inkRadiusPtr = glGetUniformLocation(shaderHandle, "InkRadius");
+    GLint inkStrengthPtr = glGetUniformLocation(shaderHandle, "InkStrength");
+    GLint inkPosition = glGetUniformLocation(shaderHandle, "InkPosition");
+    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
+
+    glUniform3f(newInk, inkColors[selectedColor].r, inkColors[selectedColor].g, inkColors[selectedColor].b);
+    glUniform1f(inkRadiusPtr, inkRadius);
+    glUniform1f(inkStrengthPtr, inkStrength);
+    glUniform2f(inkPosition, verticesLine[0].x, verticesLine[0].y);
+    glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, canvas.texture);
+
+    glBindVertexArray(VAOs[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    unbind();
+}

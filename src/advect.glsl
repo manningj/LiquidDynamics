@@ -23,14 +23,14 @@ void main()
 {
   vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
 
-  vec3 boundaryCoord = texture(boundaryTex, Scale * fragCoord).rgb;
-  float isBoundary = 1.0;
-  if(boundaryCoord.z == 1.0){
-    isBoundary = -1.0;
-      vec2 offsets = (((boundaryCoord.xy) *2) -1);
-      fragCoord = fragCoord + offsets;
+  // vec3 boundaryCoord = texture(boundaryTex, Scale * fragCoord).rgb;
+  // float isBoundary = 1.0;
+  // if(boundaryCoord.z == 1.0){
+  //   isBoundary = -1.0;
+  //     vec2 offsets = (((boundaryCoord.xy) *2) -1);
+  //     fragCoord = fragCoord + offsets;
       
-  }
+  // }
 
   //this gets the samples the value of velo tex at the window coordinates of the fragment.
   // u = the velocity of this fragment(or cell)
@@ -49,7 +49,18 @@ void main()
     //newX = vec4(1.0);
     // newX = vec4(0.5,0.5,0.5, 1.0);
   // } else {
-    newX = isBoundary*vec4(texture(posTex, pos).xy, 0.5, 1.0);
+
+
+
+    // NEED TO ALTER!!!!! (look at the first commented section of the boundaries shader)
+
+    //newX = isBoundary*vec4(texture(posTex, pos).xy, 0.5, 1.0);
+    newX = vec4(texture(posTex, pos).xy, 0.5, 1.0);
+
+
+
+
+
   // }
 }
 

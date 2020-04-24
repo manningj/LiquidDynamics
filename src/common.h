@@ -83,6 +83,7 @@ typedef struct shaders_struct {
     GLuint subtractGradient;
     GLuint addedForce;
     GLuint boundaries;
+    GLuint addedInk;
     //more items here eventually
 } Shaders;
 
@@ -107,4 +108,5 @@ void divergence(Field velocityField, Field destination);
 void jacobi(Field xField, Field bField,Field boundary, Field destination,float scale, float alphaParameter, float betaParameter);
 
 void boundaries(Field destination);
+void addedInk(Field canvas, Field destination);
 #endif

@@ -98,6 +98,7 @@
     <ClCompile Include="..\src\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\src\addedInk.glsl" />
     <None Include="..\src\advect.glsl" />
     <None Include="..\src\boundaries.glsl" />
     <None Include="..\src\divergence.glsl" />
