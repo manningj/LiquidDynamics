@@ -11,6 +11,11 @@ void main()
 {
  //vec3 L = FillColor;
   vec3 curr = texture(Sampler, gl_FragCoord.xy * Scale).rgb;
+  // if (curr.x == 0 || curr.y == 0) {
+  //   out_colour = vec4(0.0,0.0,1.0, 1.0);
+  // } else {
   out_colour = vec4(curr, 1);
+  // }
+  
   //out_colour = f_colour;
 }

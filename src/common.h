@@ -106,5 +106,5 @@ void subtractGradient(Field velocity, Field pressure, Field destination);
 void divergence(Field velocityField, Field destination);
 void jacobi(Field xField, Field bField, Field destination,float alphaParameter, float betaParameter);
 
-void boundaries(Field stateField, Field destination, bool isVelo);
+void boundaries(Field destination);
 #endif

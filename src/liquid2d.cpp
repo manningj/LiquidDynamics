@@ -47,8 +47,6 @@ const color4 clearColour = color4(0,0,0,1); //black background
 //   point4(1.0,  1.0,  0.1, 1.0)
 // };
 
-
-
 //point4 verticesBoundary[8] = {
 //    point4(-1.0,  1.0,  0.0, 1.0),
 //    point4(-1.0,  -1.0,  0.0, 1.0),
@@ -62,9 +60,6 @@ const color4 clearColour = color4(0,0,0,1); //black background
 //    point4(1.0,  1.0,  0.0, 1.0),
 //    point4(-1.0,  1.0,  0.0, 1.0),
 //};
-
-
-
 
 // point4 verticesSquare[6] = {
 //   point4(1.0,  638.0,  0.0, 1.0),
@@ -89,31 +84,28 @@ point4 verticesLine[2]{
     point4(0.0,  0.0,  0.0, 1.0),
 };
 
-point4 verticesBoundary[8] = {
-   point4(0.0,  639.0,  0.0, 1.0),
-   point4(0.0,  0.0,  0.0, 1.0),
+ point4 verticesBoundary[8] = {
+    point4(0.0,  639.0,  0.1, 1.0),
+    point4(0.0,  0.0,  0.1, 1.0),
 
-   point4(0.0,  0.0,  0.0, 1.0),
-   point4(639.0,  0.0,  0.0, 1.0),
+    point4(0.0,  0.0,  0.1, 1.0),
+    point4(639.0,  0.0,  0.1, 1.0),
 
-   point4(639.0,  0.0,  0.0, 1.0),
-   point4(639.0,  639.0,  0.0, 1.0),
+    point4(639.0,  0.0,  0.1, 1.0),
+    point4(639.0,  639.0,  0.1, 1.0),
 
-   point4(639.0,  639.0,  0.0, 1.0),
-   point4(0.0,  639.0,  0.0, 1.0),
-};
+    point4(639.0,  639.0,  0.1, 1.0),
+    point4(0.0,  639.0,  0.1, 1.0),
+ };
 
-// point4 verticesBoundary[6] = {
-//   point4(0.0,  639.0,  0.0, 1.0),
-//   point4(0.0, 0.0,  0.0, 1.0),
-//   point4(639.0, 0.0,  0.0, 1.0),
-//   point4(0.0,  639.0, 0.0, 1.0),
-//   point4(639.0, 0.0,  0.0, 1.0),
-//   point4(639.0,  639.0,  0.0, 1.0)
-// };
-
-
-
+//point4 verticesBoundary[6] = {
+//  point4(0.0,  639.0,  0.7, 1.0),
+//  point4(0.0, 0.0,  0.7, 1.0),
+//  point4(639.0, 0.0,  0.7, 1.0),
+//  point4(0.0,  639.0, 0.7, 1.0),
+//  point4(639.0, 0.0,  0.7, 1.0),
+//  point4(639.0,  639.0,  0.7, 1.0)
+//};
 
 // point4(0.0,  639.0,  0.0, 1.0),
 //   point4(0.0, 0.0,  0.0, 1.0),
@@ -121,9 +113,6 @@ point4 verticesBoundary[8] = {
 //   point4(0.0,  639.0, 0.0, 1.0),
 //   point4(639.0, 0.0,  0.0, 1.0),
 //   point4(639.0,  639.0,  0.0, 1.0)
-
-
-
 
 //-----------------------------------------------------------------------
 
@@ -147,8 +136,8 @@ Shaders* shaders = &temp;
 
 float viscosity = 0.5f;
 float dt = 1.0f/60.0f;
-Pair Velocity, Pressure, Density;
-Field Divergence;
+Pair Velocity, Pressure, Ink, Density;
+Field Boundaries, Divergence;
 
 // Velocity settings when adding force
 const float VELOCITY_SCALE = 10.0f; // Lower number increases intensity of force
@@ -177,7 +166,6 @@ void init()
    vPosition[5] = glGetAttribLocation(shaders->addedForce, "vPosition");
    vPosition[6] = glGetAttribLocation(shaders->boundaries, "vPosition");
 
-
    Projection[0] = glGetUniformLocation(shaders->drawTexture, "Projection");
    Projection[1] = glGetUniformLocation(shaders->advect, "Projection");
    Projection[2] = glGetUniformLocation(shaders->jacobi, "Projection");
@@ -186,8 +174,6 @@ void init()
    Projection[5] = glGetUniformLocation(shaders->addedForce, "Projection");  
    Projection[6] = glGetUniformLocation(shaders->boundaries, "Projection");   
  
-   
-
    // Set up added force program
    
    //glGenVertexArrays(2, VAOs);
@@ -199,6 +185,9 @@ void init()
    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
    //prevTime = std::clock();
 
+   // Initialize the boundaries field (using Pair in case we have time for moving boundaries)
+   //boundaries(Boundaries.foo);
+   //swapField(&Boundaries);
 }
 
 //----------------------------------------------------------------------------
@@ -209,7 +198,7 @@ void display(void)
    //prevTime = std::clock();
 
    runtime();
-   
+      
    GLuint shaderHandle = shaders->drawTexture;
    // Clear output framebuffer
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -225,31 +214,12 @@ void display(void)
    glUniform2f(scale, 1.0f / (windowWidth-1.0), 1.0f / (windowHeight - 1.0)); // Minus by one to convert 0-639 to 0-1
 
    // Bind texture and draw
-
    glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
-   
+   glBindTexture(GL_TEXTURE_2D, Boundaries.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
 
-
-   // DRAW SECOND SQUARE
-
-   // shaderHandle = shaders->boundaries;
-   // glUseProgram(shaderHandle);
-   // glBindVertexArray(VAOs[1]);
-   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-   // //GLint fillColor = glGetUniformLocation(program2, "FillColor");
-   // //GLint scale = glGetUniformLocation(program2, "Scale");
-   // //printf("%d %d\n", fillColor, scale);
-   // //glUniform3f(fillColor, 1, 1, 1);
-   // //glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
-   // glBindTexture(GL_TEXTURE_2D, 0);
-   // glDrawArrays(GL_LINES, 0, 6);
-
-
-   glutSwapBuffers();
-   
+   glutSwapBuffers();   
 }
 
 //----------------------------------------------------------------------------
@@ -265,7 +235,7 @@ void keyboard(unsigned char key, int x, int y)
       break;
    case 32:
       //spacebar, in case we want it
-      //swapField(&temp);
+      //swapField(&Boundaries);
       break;
    }
 }
@@ -332,7 +302,6 @@ void reshape(int width, int height)
    glUseProgram(shaders->addedForce);
    glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
 
-
    glUseProgram(shaders->boundaries);
    glUniformMatrix4fv(Projection[i], 1, GL_FALSE, glm::value_ptr(projection));
    
@@ -362,6 +331,7 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
          glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 
          glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
+
          // Set vPosition vertex attibute for shader(s)
          assignAttrib();
 
@@ -384,7 +354,6 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
          glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 
    /*########################################################################*/
-
 }
 
 void assignAttrib(){
@@ -435,6 +404,8 @@ void runtime(){
    // float  pressureAlpha = (cellSize*cellSize) * -1.0f;
    // float  pressureBeta = 4.0f;
 
+   boundaries(Boundaries);
+
    //advect(Velocity.foo, Velocity.foo,Velocity.bar);
    //swapField(&Velocity);
 
@@ -455,9 +426,7 @@ void runtime(){
    //  subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
    //  swapField(&Velocity);
 
-    boundaries(Velocity.foo, Velocity.foo, true);
-    //swapField(&Velocity);
-
+   // MAY NOT NEED ANY MORE?
    // boundaries(Pressure.foo, Pressure.bar, false);
    // swapField(&Pressure);
 
@@ -473,7 +442,6 @@ void runtime(){
 
 }
 
-
 void initFields(){
       std::cout << "-> init fields started" << "\n";
 
@@ -483,17 +451,25 @@ void initFields(){
 
    Pressure = createPair(fieldWidth, fieldHeight);
       std::cout << "-> init Pressure complete"<< "\n";
+      clearField(Ink.foo, 0.0);
+
+   Ink = createPair(fieldWidth, fieldHeight);
+      std::cout << "-> init Ink complete"<< "\n";
+   clearField(Ink.foo, 1.0);
 
    Divergence = createField(fieldWidth, fieldHeight);
       std::cout << "-> init Divergence complete"<< "\n";
+
+   Boundaries = createField(fieldWidth, fieldHeight);
+      std::cout << "-> init Boundaries complete" << "\n";
+      clearField(Boundaries, 0.0);
 
    initShaders(shaders);
       std::cout << "-> init shaders complete"<< "\n";
 }
 
 
-void unbind(){
-
+void unbind() {
    //after each call to a shader program, 
    //we should remove the shader specific bindings.
    //we do this by bindining them to "0";
@@ -641,11 +617,8 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
    GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
 
-
    glUniform1f(gradScale, 1/(fieldWidth-1.0));
    glUniform1i(pressure, 1);
-
-   
 
     //bindframe buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
@@ -689,67 +662,37 @@ void divergence(Field velocityField, Field destination){
    unbind();
 
 
-    
 }
 
-void boundaries(Field stateField, Field destination, bool isVelo){
-   
+void boundaries(Field destination){
    GLuint shaderHandle = shaders->boundaries;
 
    glUseProgram(shaderHandle);
-
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glBindVertexArray(VAOs[1]);
    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
 
+   GLuint offset = glGetUniformLocation(shaderHandle, "Offset");
 
-   // GLuint offset =   glGetUniformLocation(shaderHandle, "Offset");
-   GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
-   // GLuint isVelocity = glGetUniformLocation(shaderHandle, "isVelocity");
+  // NOT SURE IF IN CORRECT ORDER?
+  point2 offsetArray[4] = {
+     point2(1.0, 0.5), 
+     point2(0.5, 1.0),
+     point2(0.0, 0.5),
+     point2(0.5, 0.0)
+  };
 
-
-
-
-   glUniform2f(scale, 1.0f/(fieldWidth-1.0), 1.0f/(fieldHeight-1.0));
-   // glUniform1i(isVelocity, isVelo);
+  point2 off;
+  for(int i = 0; i < 4; i++){
+     off = offsetArray[i];
+     glUniform2f(offset, off.x, off.y);
+     glDrawArrays(GL_LINES,i*2, 2);
+  }
    
-   // glm::ivec2 offsetArray[4] = {
-
-   // glm::ivec2(1, 0), 
-   // glm::ivec2(0, 1),
-   // glm::ivec2(-1, 0),
-   // glm::ivec2(0, -1)`
-
-   // };
-
-   // glm::ivec2 off;
-      glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
-      
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, stateField.texture);
-
-
-
-
-   // shaderHandle = shaders->boundaries;
-   // glUseProgram(shaderHandle);
-   // glBindVertexArray(VAOs[1]);
-   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-  //glBindTexture(GL_TEXTURE_2D, 0);
-   glDrawArrays(GL_LINE_LOOP, 0, 8);
-
-
-
-
-
-   // for(int i = 0; i < 4; i++){
-   //    off = offsetArray[i];
-   //    glUniform2i(offset, off.x, off.y);
-   //    glDrawArrays(GL_LINES,i * sizeof(point4), 2);
-   // }
    unbind();
 
    glBindVertexArray(VAOs[0]);
    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-
 }
 
