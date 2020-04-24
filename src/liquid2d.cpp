@@ -234,7 +234,7 @@ void display(void)
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
    glEnable(GL_BLEND);
-   glBindTexture(GL_TEXTURE_2D, Divergence.texture);
+   glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
    glDisable(GL_BLEND);
@@ -296,18 +296,21 @@ void mouse(int button, int state, int x, int y)
    //left button click
    if(button == GLUT_LEFT_BUTTON) {
       // Get initial point for adding force
-      verticesLine[0] = point4((float)x, (float)windowHeight - 1.0 - (float)y, 0.0, 1.0);
+      verticesLine[0] = point4((float)x, (float)windowHeight - 1 - (float)y, 0.0, 1.0);
+      printf("%d, %d\n", x, windowHeight - 1 - y);
    }
    //right button click
    if(button == GLUT_RIGHT_BUTTON) {
        // Add ink if right click?
+       verticesLine[0] = point4((float)x, (float)windowHeight - 1- (float)y, 0.0, 1.0);
+      printf("%d, %d\n", x, windowHeight - 1 - y);
    }
 }
 
 //----------------------------------------------------------------------------
 
 void mouseDrag(int x, int y) { // Add force
-   verticesLine[1] = point4((float)x, (float)windowHeight-1.0-(float)y, 0.0, 1.0);
+   verticesLine[1] = point4((float)x, (float)windowHeight - 1 -(float)y, 0.0, 1.0);
    printf("%d, %d\n", x, windowHeight - 1 - y);
    addedInk(Ink.foo, Ink.bar);
    swapField(&Ink);
@@ -486,6 +489,13 @@ void runtime(){
       jacobi(Velocity.foo, Velocity.foo, Velocity.bar, Boundaries, -1.0f, diffusionAlpha,diffusionBeta);
       swapField(&Velocity);
    }
+
+   // addedInk(Ink.foo, Ink.bar);
+   // //swapField(&Ink);
+   
+   // addedForce(Velocity.foo, Velocity.bar);
+   // //swapField(&Velocity);
+   // verticesLine[0] = verticesLine[1]; // Start point for next force
 
    divergence(Velocity.foo, Boundaries, Divergence);
    
