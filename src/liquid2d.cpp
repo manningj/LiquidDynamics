@@ -66,13 +66,22 @@ const color4 clearColour = color4(0,0,0,1); //black background
 
 
 
+// point4 verticesSquare[6] = {
+//   point4(1.0,  638.0,  0.0, 1.0),
+//   point4(1.0, 1.0,  0.0, 1.0),
+//   point4(638.0, 1.0,  0.0, 1.0),
+//   point4(1.0,  638.0, 0.0, 1.0),
+//   point4(638.0, 1.0,  0.0, 1.0),
+//   point4(638.0,  638.0,  0.0, 1.0)
+// };
+
 point4 verticesSquare[6] = {
-  point4(1.0,  638.0,  0.0, 1.0),
-  point4(1.0, 1.0,  0.0, 1.0),
-  point4(638.0, 1.0,  0.0, 1.0),
-  point4(1.0,  638.0, 0.0, 1.0),
-  point4(638.0, 1.0,  0.0, 1.0),
-  point4(638.0,  638.0,  0.0, 1.0)
+  point4(0.0,  639.0,  0.0, 1.0),
+  point4(0.0, 0.0,  0.0, 1.0),
+  point4(639.0, 0.0,  0.0, 1.0),
+  point4(0.0,  639.0, 0.0, 1.0),
+  point4(639.0, 0.0,  0.0, 1.0),
+  point4(639.0,  639.0,  0.0, 1.0)
 };
 
 point4 verticesLine[2]{
@@ -80,15 +89,30 @@ point4 verticesLine[2]{
     point4(0.0,  0.0,  0.0, 1.0),
 };
 
-point4 verticesBoundary[6] = {
-point4(0.0,  639.0,  0.0, 1.0),
-  point4(0.0, 0.0,  0.0, 1.0),
-  point4(639.0, 0.0,  0.0, 1.0),
-  point4(0.0,  639.0, 0.0, 1.0),
-  point4(639.0, 0.0,  0.0, 1.0),
-  point4(639.0,  639.0,  0.0, 1.0)
+point4 verticesBoundary[8] = {
+   point4(0.0,  639.0,  0.0, 1.0),
+   point4(0.0,  0.0,  0.0, 1.0),
 
+   point4(0.0,  0.0,  0.0, 1.0),
+   point4(639.0,  0.0,  0.0, 1.0),
+
+   point4(639.0,  0.0,  0.0, 1.0),
+   point4(639.0,  639.0,  0.0, 1.0),
+
+   point4(639.0,  639.0,  0.0, 1.0),
+   point4(0.0,  639.0,  0.0, 1.0),
 };
+
+// point4 verticesBoundary[6] = {
+//   point4(0.0,  639.0,  0.0, 1.0),
+//   point4(0.0, 0.0,  0.0, 1.0),
+//   point4(639.0, 0.0,  0.0, 1.0),
+//   point4(0.0,  639.0, 0.0, 1.0),
+//   point4(639.0, 0.0,  0.0, 1.0),
+//   point4(639.0,  639.0,  0.0, 1.0)
+// };
+
+
 
 
 // point4(0.0,  639.0,  0.0, 1.0),
@@ -98,19 +122,7 @@ point4(0.0,  639.0,  0.0, 1.0),
 //   point4(639.0, 0.0,  0.0, 1.0),
 //   point4(639.0,  639.0,  0.0, 1.0)
 
-// point4 verticesBoundary[8] = {
-//    point4(0.0,  639.0,  0.0, 1.0),
-//    point4(0.0,  0.0,  0.0, 1.0),
 
-//    point4(0.0,  0.0,  0.0, 1.0),
-//    point4(639.0,  0.0,  0.0, 1.0),
-
-//    point4(639.0,  0.0,  0.0, 1.0),
-//    point4(639.0,  639.0,  0.0, 1.0),
-
-//    point4(639.0,  639.0,  0.0, 1.0),
-//    point4(0.0,  639.0,  0.0, 1.0),
-//};
 
 
 //-----------------------------------------------------------------------
@@ -210,7 +222,7 @@ void display(void)
 
    // Set uniforms
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
-   glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
+   glUniform2f(scale, 1.0f / (windowWidth-1.0), 1.0f / (windowHeight - 1.0)); // Minus by one to convert 0-639 to 0-1
 
    // Bind texture and draw
 
@@ -542,13 +554,13 @@ void addedForce(Field velocity, Field destination) {
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
-   glUniform2f(scale, 1.0f / windowWidth, 1.0f / windowHeight);
+   glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
 
    printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    printf("timeStep: %f,\n", dt);
    printf("impulseRadius: %f\n", forceRadius);
    printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
-   printf("scale: %f, %f\n\n", 1.0f / windowWidth, 1.0f / windowHeight);
+   printf("scale: %f, %f\n\n", 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
 
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
@@ -572,7 +584,7 @@ void advect(Field velocity, Field position, Field destination){
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
 
 
-   glUniform2f(scale, 1.0f / fieldWidth, 1.0f / fieldHeight); // rdx is 1/dx and dy
+   glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0)); // rdx is 1/dx and dy
 
    glUniform1f(timeStep, dt);
    glUniform1i(posTex, 1); // texture 1, a sampler2D.
@@ -658,7 +670,7 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
 
 
-   glUniform1f(gradScale, 1/fieldWidth);
+   glUniform1f(gradScale, 1/(fieldWidth-1.0));
    glUniform1i(pressure, 1);
 
    
@@ -725,7 +737,7 @@ void boundaries(Field stateField, Field destination, bool isVelo){
 
 
 
-   glUniform2f(scale, 1.0f/fieldWidth, 1.0f/fieldHeight);
+   glUniform2f(scale, 1.0f/(fieldWidth-1.0), 1.0f/(fieldHeight-1.0));
    // glUniform1i(isVelocity, isVelo);
    
    // glm::ivec2 offsetArray[4] = {
@@ -751,7 +763,7 @@ void boundaries(Field stateField, Field destination, bool isVelo){
    // glBindVertexArray(VAOs[1]);
    // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
   //glBindTexture(GL_TEXTURE_2D, 0);
-   glDrawArrays(GL_LINES, 0, 8);
+   glDrawArrays(GL_LINE_LOOP, 0, 8);
 
 
 
