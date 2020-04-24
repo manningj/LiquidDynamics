@@ -362,42 +362,26 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
          glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 
          glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
-      assignAttrib();
-         
-         // glBindVertexArray(VAOs[1]);
-         // // Bind VBO to VAO
-         // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-
-         // glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBoundary), verticesBoundary, GL_STATIC_DRAW);
-
          // Set vPosition vertex attibute for shader(s)
+         assignAttrib();
 
-         
 
-         
-   glUseProgram(shaders->boundaries);
-   vPosition[6] = glGetAttribLocation(shaders->boundaries, "vPosition");
-//   glGenVertexArrays(1, &VAO2);
-   //vPosition[6] = glGetUniformLocation(shaders->boundaries, "Projection");
+         // Now set up the boundary border vPosition
+         glUseProgram(shaders->boundaries);
 
-//   glGenBuffers(1, &buffer2);
-   /*########################################################################*/
          // Bind VAO
          glBindVertexArray(VAOs[1]);
          // Bind VBO to VAO
          glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
 
          glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBoundary), verticesBoundary, GL_STATIC_DRAW);
-         // Set vPosition vertex attibute for shader(s)
+
+         // Set vPosition vertex attibute for shader
          glEnableVertexAttribArray(vPosition[6]);
          glVertexAttribPointer(vPosition[6], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
-
-
-
          glBindVertexArray(VAOs[0]);
          glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-
 
    /*########################################################################*/
 
@@ -405,10 +389,6 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
 
 void assignAttrib(){
    int i = 0;
-   
-   // glBindVertexArray(VAOs[0]);
-   // glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-
 
    glUseProgram(shaders->drawTexture);
 
@@ -439,14 +419,6 @@ void assignAttrib(){
 
       glEnableVertexAttribArray(vPosition[i]);
       glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-   // glBindVertexArray(VAOs[1]);
-   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-   
-   // glUseProgram(shaders->boundaries);
-
-   //    glEnableVertexAttribArray(vPosition[i]);
-   //    glVertexAttribPointer(vPosition[i], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 }
 //----------------------------------------------------------------------------
 
