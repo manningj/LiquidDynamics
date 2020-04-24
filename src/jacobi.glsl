@@ -29,25 +29,38 @@ void main(){
     vec4 bot = texelFetchOffset(x, fragCoord, 0, ivec2(0, -1));
     vec4 right = texelFetchOffset(x, fragCoord, 0, ivec2(1, 0));
     vec4 left = texelFetchOffset(x, fragCoord, 0, ivec2(-1, 0));
+   
+    vec4 center = texelFetch(x, fragCoord, 0);
+    
+    //if any of the surrounding cells are an obstacle, we want to use the center for velocity/pressure.
+    //negative center velocity for velocity, positive center pressure for pressure.
+   
+    
+    vec4 centerV = (center * 2.0f) -1.0f; //convert to (-1, 1)
+    
+    centerV = (centerV * Scale); //invert if velocity 
+    centerV = (centerV + 1.0f)/2.0f; // c[o]nvert back to texture range (0,1)
+    
+    center = centerV;
     
 
-    vec4 boundaryCoord = texelFetch(boundaryTex, fragCoord, 0);
+    //get surrounding boundary cells
+    vec4 boundaryTop = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(0, 1));
+    vec4 boundaryBot = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(0, -1));
+    vec4 boundaryRight = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(1, 0));
+    vec4 boundaryLeft = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(-1, 0));
 
-    if(boundaryCoord.z == 1.0){
-        ivec2 offsets = ivec2(((boundaryCoord.xy) *2) -1);
-        fragCoord = fragCoord + offsets;
-        vec4 center = texelFetch(x, fragCoord, 0);
-        xNew = center * Scale;
-        return;
-    }
-//might need to change the left /right etc when we hit a texel adjacent to a boundary?
-
+    //if any of the surrounding cells are an obstacle, we want to use the center for velocity/pressure.
+    //negative center velocity for velocity, positive center pressure for pressure.
+    if(boundaryTop.z == 1.0){top = center;}
+    if(boundaryBot.z == 1.0){bot = center;}
+    if(boundaryRight.z == 1.0){right = center;}
+    if(boundaryLeft.z == 1.0){left = center;}
 
     //get center of b sample
     vec4 bC = texelFetch(b, fragCoord, 0);
 
     xNew = ((top  + bot + right + left + (alpha * bC)) * rBeta );
-    //xNew = ((top  -0.5 + bot-0.5  + right-0.5  + left -0.5 + (alpha * (bC-0.5 ))) * rBeta) + 0.5 ;
 
 
 }//end jacobi main

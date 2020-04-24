@@ -18,19 +18,19 @@ void main(){
     float pB = texelFetchOffset(pressure, fragCoord, 0, ivec2(0, -1)).r;
     float pR = texelFetchOffset(pressure, fragCoord, 0, ivec2(1, 0)).r;
     float pL = texelFetchOffset(pressure, fragCoord, 0, ivec2(-1, 0)).r;
+    
+    float pC = texelFetch(pressure, fragCoord, 0).r;
 
-    //vec3 boundaryCoord(boundaryTex, fragCoord);
-    vec3 boundaryCoord = texelFetch(boundaryTex, fragCoord, 0).rgb;
+    vec4 boundaryTop = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(0, 1));
+    vec4 boundaryBot = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(0, -1));
+    vec4 boundaryRight = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(1, 0));
+    vec4 boundaryLeft = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(-1, 0));
 
-    if(boundaryCoord.z == 1.0){
-        
-        ivec2 offsets = ivec2(((boundaryCoord.xy) *2) -1);
-        fragCoord = fragCoord + offsets;
 
-        vec2 pC = texelFetch(pressure, fragCoord, 0).xy;
-
-        fragOut = vec4(pC, 0.5, 1.0); // If this is pressure, do we need y? If velocity, this should do it though
-    }
+    if(boundaryTop.z == 1.0){ pT = pC;}
+    if(boundaryBot.z == 1.0){ pB = pC;}
+    if(boundaryRight.z == 1.0){ pR = pC;}
+    if(boundaryLeft.z == 1.0){ pL = pC;}
 
 
     //free slip boundary condition

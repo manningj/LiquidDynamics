@@ -4,6 +4,7 @@ out vec4 newX; //the advected position
 
 uniform vec2 Scale; // {1/field width, 1/field height}
 uniform float timeStep; //dt
+uniform float dissipation; //diffusion value
 uniform sampler2D veloTex; //velocity texture
 uniform sampler2D posTex;// position texture.
 uniform sampler2D boundaryTex;
@@ -23,27 +24,20 @@ void main()
 {
   vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
 
-  // vec3 boundaryCoord = texture(boundaryTex, Scale * fragCoord).rgb;
-  // float isBoundary = 1.0;
-  // if(boundaryCoord.z == 1.0){
-  //   isBoundary = -1.0;
-  //     vec2 offsets = (((boundaryCoord.xy) *2) -1);
-  //     fragCoord = fragCoord + offsets;
-      
-  // }
+  vec3 boundaryCoord = texture(boundaryTex, Scale * fragCoord).rgb;
+  if(boundaryCoord.z == 1.0){
+      newX = vec4(0.5f, 0.5f, 0.5f, 1.0);
+      return;
+  }
 
   //this gets the samples the value of velo tex at the window coordinates of the fragment.
   // u = the velocity of this fragment(or cell)
   vec2 u = ((texture(veloTex, Scale * fragCoord).xy) - 0.5) * 640.0f;; 
   //go to previous position.
-  //prev pos is calculated using the 
-
   
-  //vec2 prevPos =  rdx * (fragCoord - timeStep * u);
-  // vec2 pos = textCoord - timeStep * Scale * u;
   vec2 pos = (fragCoord - timeStep * u )* Scale;
   //this gets the new advectd pos.
-  //  
+  
 
   // if (u.x > 0.5 || u.y > 0.5) {
     //newX = vec4(1.0);
@@ -55,7 +49,8 @@ void main()
     // NEED TO ALTER!!!!! (look at the first commented section of the boundaries shader)
 
     //newX = isBoundary*vec4(texture(posTex, pos).xy, 0.5, 1.0);
-    newX = vec4(texture(posTex, pos).xy, 0.5, 1.0);
+    
+    newX = vec4(dissipation *texture(posTex, pos).xyz, 1.0);
 
 
 

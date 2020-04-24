@@ -13,9 +13,9 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 
 //constants and variables
 const GLfloat LEFT = -0.5f;
-const GLfloat RIGHT = 639.5f;
+const GLfloat RIGHT = 638.5f;
 const GLfloat TOP = -0.5f;
-const GLfloat BOTTOM = 639.5f;
+const GLfloat BOTTOM = 638.5f;
 const GLfloat Z_NEAR = -1.0f;
 const GLfloat Z_FAR  = 1.0f;
 //boolean used for double clicking
@@ -71,12 +71,12 @@ const color4 clearColour = color4(0,0,0,1); //black background
 // };
 
 point4 verticesSquare[6] = {
-  point4(0.0,  640.0,  0.0, 1.0),
+  point4(0.0,  639.0,  0.0, 1.0),
   point4(0.0, 0.0,  0.0, 1.0),
-  point4(640.0, 0.0,  0.0, 1.0),
-  point4(0.0,  640.0, 0.0, 1.0),
-  point4(640.0, 0.0,  0.0, 1.0),
-  point4(640.0,  640.0,  0.0, 1.0)
+  point4(639.0, 0.0,  0.0, 1.0),
+  point4(0.0,  639.0, 0.0, 1.0),
+  point4(639.0, 0.0,  0.0, 1.0),
+  point4(639.0,  639.0,  0.0, 1.0)
 };
 
 point4 verticesLine[2]{
@@ -98,14 +98,14 @@ point4 verticesLine[2]{
     point4(0.0,  639.0,  0.1, 1.0),
  };
 
-//point4 verticesBoundary[6] = {
+// point4 verticesBoundary[6] = {
 //  point4(0.0,  639.0,  0.7, 1.0),
 //  point4(0.0, 0.0,  0.7, 1.0),
 //  point4(639.0, 0.0,  0.7, 1.0),
 //  point4(0.0,  639.0, 0.7, 1.0),
 //  point4(639.0, 0.0,  0.7, 1.0),
 //  point4(639.0,  639.0,  0.7, 1.0)
-//};
+// };
 
 // point4(0.0,  639.0,  0.0, 1.0),
 //   point4(0.0, 0.0,  0.0, 1.0),
@@ -134,7 +134,7 @@ GLuint buffers[2];
 Shaders temp = {0,0,0,0,0,0,0,0};
 Shaders* shaders = &temp;
 
-float viscosity = 0.5f;
+float viscosity = 0.7f;
 float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Ink, Density;
 Field Boundaries, Divergence;
@@ -233,9 +233,21 @@ void display(void)
 
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
+   glEnable(GL_BLEND);
    glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
+   glDisable(GL_BLEND);
+
+   // //DRAW SECOND SQUARE
+
+   // shaderHandle = shaders->boundaries;
+   // glUseProgram(shaderHandle);
+   // glBindVertexArray(VAOs[1]);
+   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+ 
+   // glBindTexture(GL_TEXTURE_2D, 0);
+   // glDrawArrays(GL_TRIANGLES, 0, 6);
 
    glutSwapBuffers();   
 }
@@ -267,8 +279,14 @@ void keyboard(unsigned char key, int x, int y)
    case '9':
       selectedColor = key - '0';
       break;
+   case 'w':
+      viscosity += 0.1;
+   break;
+   case 's':
+      viscosity -= 0.1;
+      break;
    }
-
+std::cout << "viscosity: " << viscosity << "\n";
 }
 
 //----------------------------------------------------------------------------
@@ -293,6 +311,7 @@ void mouseDrag(int x, int y) { // Add force
    printf("%d, %d\n", x, windowHeight - 1 - y);
    addedInk(Ink.foo, Ink.bar);
    swapField(&Ink);
+   
    addedForce(Velocity.foo, Velocity.bar);
    swapField(&Velocity);
    verticesLine[0] = verticesLine[1]; // Start point for next force
@@ -438,42 +457,7 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 //----------------------------------------------------------------------------
 
 void runtime(){
-   float  diffusionAlpha =(cellSize*cellSize) /(viscosity*dt);
-   float  diffusionBeta = (4 + (cellSize*cellSize) /(viscosity*dt));
 
-   float  pressureAlpha = (cellSize*cellSize) * -1.0f;
-   float  pressureBeta = 4.0f;
-
-   boundaries(Boundaries);
-
-   // advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar);
-   // swapField(&Velocity);
-
-   // for(int i = 0; i < jacobiIterations; ++i){
-   //    jacobi(Velocity.foo, Velocity.foo, Velocity.bar, Boundaries, -1.0f, diffusionAlpha,diffusionBeta);
-   //    swapField(&Velocity);
-   // }
-
-   // divergence(Velocity.foo, Divergence);
-   
-   // clearField(Pressure.foo, 0);
-
-   // for(int i = 0; i < jacobiIterations; ++i){
-   //    jacobi(Pressure.foo, Divergence, Pressure.bar,Boundaries, 1.0f, pressureAlpha,pressureBeta);
-   //    swapField(&Pressure);
-   // }
-
-   //  subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
-   //  swapField(&Velocity);
-
-   // MAY NOT NEED ANY MORE?
-    //boundaries(Velocity.foo, Velocity.foo, true);
-    //swapField(&Velocity);
-
-   // boundaries(Pressure.foo, Pressure.bar, false);
-   // swapField(&Pressure);
-
-   
    // GPU Gems pseudocode:
    // Apply the first 3 operators in Equation 12.
    // u = advect(u);
@@ -482,6 +466,40 @@ void runtime(){
    // Now apply the projection operator to the result.
    // p = computePressure(u);
    // u = subtractPressureGradient(u, p); 
+   float v = viscosity * fieldWidth;
+
+   float  diffusionAlpha =(cellSize*cellSize) /(v*dt);
+   float  diffusionBeta = (4 + (cellSize*cellSize) /(v*dt));
+
+   float  pressureAlpha = (-cellSize*cellSize);
+   float  pressureBeta = 4.0f;
+
+   boundaries(Boundaries);
+
+   advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, 1.0f);
+   swapField(&Velocity);
+
+   advect(Velocity.foo, Ink.foo, Boundaries, Ink.bar, inkDissipation);
+   swapField(&Ink);
+
+   for(int i = 0; i < jacobiIterations; ++i){
+      jacobi(Velocity.foo, Velocity.foo, Velocity.bar, Boundaries, -1.0f, diffusionAlpha,diffusionBeta);
+      swapField(&Velocity);
+   }
+
+   divergence(Velocity.foo, Boundaries, Divergence);
+   
+   clearField(Pressure.foo, 0);
+
+   for(int i = 0; i < jacobiIterations; ++i){
+      jacobi(Pressure.foo, Divergence, Pressure.bar,Boundaries, 1.0f, pressureAlpha,pressureBeta);
+      swapField(&Pressure);
+   }
+
+    subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
+    swapField(&Velocity);
+   
+
 
 }
 
@@ -564,7 +582,7 @@ void addedForce(Field velocity, Field destination) {
    unbind();
 }
 
-void advect(Field velocity, Field position, Field boundary,Field destination){
+void advect(Field velocity, Field position, Field boundary,Field destination, float dissipationVal){
    
    GLuint shaderHandle = shaders->advect;
 
@@ -572,12 +590,16 @@ void advect(Field velocity, Field position, Field boundary,Field destination){
 
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
+   GLuint dissipation = glGetUniformLocation(shaderHandle, "dissipation");
+
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0)); // rdx is 1/dx and dy
+   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldWidth)); // rdx is 1/dx and dy
 
    glUniform1f(timeStep, dt);
+   glUniform1f(dissipation, dissipationVal);
+
    glUniform1i(posTex, 1); // texture 1, a sampler2D.
    glUniform1i (boundaryTex, 2);
    //bindframe buffer to the destination field
@@ -625,7 +647,7 @@ void jacobi(Field xField, Field bField, Field boundary,Field destination, float 
 
    GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
    GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
-      GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
+   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    //GLuint x = glGetUniformLocation(shaderHandle, "x");
    GLuint b = glGetUniformLocation(shaderHandle, "b");
@@ -668,7 +690,7 @@ void subtractGradient(Field velocityField, Field pressureField, Field boundary, 
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   glUniform1f(gradScale, 1/(fieldWidth-1.0));
+   glUniform1f(gradScale, 1/(fieldWidth));
    glUniform1i(pressure, 1);
    glUniform1i (boundaryTex, 2);
 
@@ -692,15 +714,16 @@ void subtractGradient(Field velocityField, Field pressureField, Field boundary, 
 
 }
 
-void divergence(Field velocityField, Field destination){
+void divergence(Field velocityField, Field boundary, Field destination){
    GLuint shaderHandle = shaders->divergence;
    glUseProgram(shaderHandle);
 
    //GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
    GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
-
+   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    glUniform1f(halfrdx, 0.5f/cellSize);
+   glUniform1i (boundaryTex, 1);
 
    //bindframe buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
@@ -708,7 +731,8 @@ void divergence(Field velocityField, Field destination){
    //set texture 0 to be the velocity field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocityField.texture);
-   
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, boundary.texture);
    //use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
@@ -764,7 +788,7 @@ void addedInk(Field canvas, Field destination) {
     glUniform1f(inkRadiusPtr, inkRadius);
     glUniform1f(inkStrengthPtr, inkStrength);
     glUniform2f(inkPosition, verticesLine[0].x, verticesLine[0].y);
-    glUniform2f(scale, 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
+    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldWidth));
 
     glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
