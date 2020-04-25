@@ -24,7 +24,7 @@
 #define windowHeight 640
 #define fieldWidth windowWidth
 #define fieldHeight windowHeight
-#define inkDissipation 0.97f
+#define inkDissipation 0.98f
 //#define fieldWidth (windowWidth/2)
 //#define fieldHeight (windowHeight/2)
  
@@ -103,10 +103,10 @@ void runtime();
 void assignAttrib();
 void initFields();
 void addedForce(Field velocity, Field destination);
-void advect(Field velocity, Field pressure, Field boundary, Field destination, float dissipationVal);
+void advect(Field velocity, Field pressure, Field boundary, Field destination, float dissipationVal, bool advectingInk);
 void subtractGradient(Field velocity, Field pressure,Field boundary, Field destination);
 void divergence(Field velocityField,Field boundary,  Field destination);
-void jacobi(Field xField, Field bField,Field boundary, Field destination,float scale, float alphaParameter, float betaParameter);
+void jacobi(Field xField, Field bField,Field boundary, Field destination,  bool isVelo, float alphaParameter, float betaParameter);
 
 void boundaries(Field destination);
 void addedInk(Field canvas, Field destination);

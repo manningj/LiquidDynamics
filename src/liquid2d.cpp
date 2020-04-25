@@ -12,13 +12,20 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 //-------------------------------------------------------------------
 
 //constants and variables
-
-const GLfloat LEFT = -0.5f;
-const GLfloat RIGHT = 640.5f;
-const GLfloat TOP = -0.5f;
-const GLfloat BOTTOM = 640.5f;
+//constants and variables
+const GLfloat LEFT = -1.0f;
+const GLfloat RIGHT = 1.0f;
+const GLfloat TOP = 1.0f;
+const GLfloat BOTTOM = -1.0f;
 const GLfloat Z_NEAR = -1.0f;
-const GLfloat Z_FAR  = 1.0f;
+const GLfloat Z_FAR = 1.0f;
+
+//const GLfloat LEFT = -0.5f;
+//const GLfloat RIGHT = 640.5f;
+//const GLfloat TOP = -0.5f;
+//const GLfloat BOTTOM = 640.5f;
+//const GLfloat Z_NEAR = -1.0f;
+//const GLfloat Z_FAR  = 1.0f;
 
 // const GLfloat LEFT = 0.0f;
 // const GLfloat RIGHT = 640.0f;
@@ -33,14 +40,14 @@ bool mousePressed = false;
 const color4 clearColour = color4(0,0,0,1); //black background
 //--------------------------------------------------------------------
 
-// point4 verticesSquare[6] = {
-//   point4(-1.0,  1.0,  0.0, 1.0),
-//   point4(-1.0, -1.0,  0.0, 1.0),
-//   point4(1.0, -1.0,  0.0, 1.0),
-//   point4(-1.0,  1.0, 0.0, 1.0),
-//   point4(1.0, -1.0,  0.0, 1.0),
-//   point4(1.0,  1.0,  0.0, 1.0)
-// };
+ point4 verticesSquare[6] = {
+   point4(-1.0,  1.0,  0.0, 1.0),
+   point4(-1.0, -1.0,  0.0, 1.0),
+   point4(1.0, -1.0,  0.0, 1.0),
+   point4(-1.0,  1.0, 0.0, 1.0),
+   point4(1.0, -1.0,  0.0, 1.0),
+   point4(1.0,  1.0,  0.0, 1.0)
+ };
 
 // point4 verticesLine[2]{
 //     point4(0.0,  0.0,  0.0, 1.0),
@@ -79,14 +86,14 @@ const color4 clearColour = color4(0,0,0,1); //black background
 //   point4(638.0,  638.0,  0.0, 1.0)
 // };
 
-point4 verticesSquare[6] = {
-  point4(0.0,  639.0,  0.0, 1.0),
-  point4(0.0, 0.0,  0.0, 1.0),
-  point4(639.0, 0.0,  0.0, 1.0),
-  point4(0.0,  639.0, 0.0, 1.0),
-  point4(639.0, 0.0,  0.0, 1.0),
-  point4(639.0,  639.0,  0.0, 1.0)
-};
+//point4 verticesSquare[6] = {
+//  point4(0.0,  639.0,  0.0, 1.0),
+//  point4(0.0, 0.0,  0.0, 1.0),
+//  point4(639.0, 0.0,  0.0, 1.0),
+//  point4(0.0,  639.0, 0.0, 1.0),
+//  point4(639.0, 0.0,  0.0, 1.0),
+//  point4(639.0,  639.0,  0.0, 1.0)
+//};
 
 point4 verticesLine[2]{
     point4(0.0,  0.0,  0.0, 1.0),
@@ -147,6 +154,11 @@ float viscosity = 0.7f;
 float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Ink, Density;
 Field Boundaries, Divergence;
+
+
+bool showVelocity = false;
+float inkDis = inkDissipation;
+float veloDis = 1.0f;
 
 float inkRadius = 25.0f;
 color3 inkColors[10] = {
@@ -243,7 +255,15 @@ void display(void)
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
    //glEnable(GL_BLEND);
-   glBindTexture(GL_TEXTURE_2D, Boundaries.texture);
+   // glBindTexture(GL_TEXTURE_2D, Divergence.texture);
+   //glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
+
+   if (showVelocity) {
+      glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
+   } else {
+      glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
+   }
+   
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
   // glDisable(GL_BLEND);
@@ -272,9 +292,10 @@ void keyboard(unsigned char key, int x, int y)
    case 'Q':
       exit(EXIT_SUCCESS);
       break;
-   case 32:
+   case ' ':
       //spacebar, in case we want it
-      //swapField(&Boundaries);
+      showVelocity = !showVelocity;
+      printf("Changing views between velocity and ink.\n");
       break;
    case '0':
    case '1':
@@ -288,14 +309,75 @@ void keyboard(unsigned char key, int x, int y)
    case '9':
       selectedColor = key - '0';
       break;
+   case 'a':
+      showVelocity = false;
+      viscosity = 0.7f;
+      inkDis = inkDissipation;
+      inkStrength = 0.15f;
+      inkRadius = 25.0f;
+      forceRadius = 500.0f;
+      clearField(Velocity.foo, 0.5);
+      clearField(Ink.foo, 0.0);
+      printf("Settings reset.\n");
+      break;
    case 'w':
       viscosity += 0.1;
-   break;
+      printf("Viscosity: %f\n", viscosity);
+      break;
    case 's':
-      viscosity -= 0.1;
+      viscosity = glm::max(0.0, viscosity - 0.1);
+      printf("Viscosity: %f\n", viscosity);
+      break;
+   case 'e':
+      inkStrength += 0.05;
+      printf("Ink Strength: %f\n", inkStrength);
+      break;
+   case 'd':
+      inkStrength = glm::max(0.0, inkStrength - 0.05);
+      printf("Ink Strength: %f\n", inkStrength);
+      break;
+   case 'r':
+      inkDis += 0.01;
+      printf("Ink Dissipation: %f\n", inkDis);
+      break;
+   case 'f':
+      inkDis = glm::max(0.0, inkDis - 0.01);
+      printf("Ink Dissipation: %f\n", inkDis);
+      break;
+   case 't':
+      inkRadius += 10.0f;
+      printf("Ink Radius: %f\n", inkRadius);
+      break;
+   case 'g':
+      inkRadius = glm::max(0.0, inkRadius - 10.0);
+      printf("Ink Radius: %f\n", inkRadius);
+      break;
+   case 'y':
+      forceRadius += 100.0f;
+      printf("Velocity Radius (note: essentially squared radius): %f\n", forceRadius);
+      break;
+   case 'h':
+      forceRadius = glm::max(0.0, forceRadius - 100.0);
+      printf("Velocity Radius (note: essentially squared radius): %f\n", forceRadius);
+      break;
+   case 'z':
+      clearField(Velocity.foo, 0.5);
+      printf("Cleared velocity.\n");
+      break;
+   case 'x':
+      clearField(Ink.foo, 0.0);
+      printf("Cleared ink.\n");
+      break;
+   case 'c':
+      if (showVelocity) {
+         clearField(Velocity.foo, 0.5);
+         printf("Cleared velocity.\n");
+      } else {
+         clearField(Ink.foo, 0.0);
+         printf("Cleared ink.\n");
+      }
       break;
    }
-std::cout << "viscosity: " << viscosity << "\n";
 }
 
 //----------------------------------------------------------------------------
@@ -339,6 +421,8 @@ void update(void)
 //called on window resize
 void reshape(int width, int height)
 {
+
+    printf("%d, %d - SIZE",width, height);
    glViewport(0, 0, windowWidth, windowHeight);
    
   
@@ -400,21 +484,21 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
 
 
          // Now set up the boundary border vPosition
-         glUseProgram(shaders->boundaries);
+         
 
-         // Bind VAO
-         glBindVertexArray(VAOs[1]);
-         // Bind VBO to VAO
-         glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+         //// Bind VAO
+         //glBindVertexArray(VAOs[1]);
+         //// Bind VBO to VAO
+         //glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
 
-         glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBoundary), verticesBoundary, GL_STATIC_DRAW);
+         //glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBoundary), verticesBoundary, GL_STATIC_DRAW);
 
          // Set vPosition vertex attibute for shader
-         glEnableVertexAttribArray(vPosition[6]);
+        /* glEnableVertexAttribArray(vPosition[6]);
          glVertexAttribPointer(vPosition[6], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
          glBindVertexArray(VAOs[0]);
-         glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+         glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);*/
 
    /*########################################################################*/
 }
@@ -456,6 +540,13 @@ void assignAttrib(){
 
       glEnableVertexAttribArray(vPosition[i]);
       glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+    glUseProgram(shaders->boundaries);
+      glEnableVertexAttribArray(vPosition[6]);
+      glVertexAttribPointer(vPosition[6], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+    glBindVertexArray(VAOs[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 }
 //----------------------------------------------------------------------------
 
@@ -475,7 +566,7 @@ void runtime(){
    // Now apply the projection operator to the result.
    // p = computePressure(u);
    // u = subtractPressureGradient(u, p); 
-   float v = viscosity;
+   float v = viscosity/5; //*300.0f;
 
    float  diffusionAlpha =(cellSize*cellSize) /(v*dt);
    float  diffusionBeta = (4 + (cellSize*cellSize) /(v*dt));
@@ -483,31 +574,30 @@ void runtime(){
    float  pressureAlpha = (-cellSize*cellSize);
    float  pressureBeta = 4.0f;
 
-   boundaries(Boundaries);
+   //boundaries(Boundaries);
 
-   advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, 1.0f);
+   advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, veloDis, false);
    swapField(&Velocity);
 
-   advect(Velocity.foo, Ink.foo, Boundaries, Ink.bar, inkDissipation);
+   advect(Velocity.foo, Ink.foo, Boundaries, Ink.bar, inkDis, true);
    swapField(&Ink);
 
    for(int i = 0; i < jacobiIterations; ++i){
-      jacobi(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar ,-1.0f, diffusionAlpha,diffusionBeta);
+      jacobi(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, true, diffusionAlpha,diffusionBeta);
       swapField(&Velocity);
    }
 
-
    divergence(Velocity.foo, Boundaries, Divergence);
    
-   clearField(Pressure.foo, 0);
+   clearField(Pressure.foo, 0.0);
 
-   for(int i = 0; i < jacobiIterations; ++i){
-      jacobi(Pressure.foo, Divergence, Boundaries, Pressure.bar, 1.0f, pressureAlpha,pressureBeta);
+   for(int i = 0; i < jacobiIterations/2; ++i){
+      jacobi(Pressure.foo, Divergence, Boundaries, Pressure.bar, false, pressureAlpha,pressureBeta);
       swapField(&Pressure);
    }
 
-    subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
-    swapField(&Velocity);
+   subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
+   swapField(&Velocity);
    
 }
 
@@ -520,11 +610,11 @@ void initFields(){
 
    Pressure = createPair(fieldWidth, fieldHeight);
       std::cout << "-> init Pressure complete"<< "\n";
-      clearField(Ink.foo, 0.0);
+      clearField(Pressure.foo, 0.2);
 
    Ink = createPair(fieldWidth, fieldHeight);
       std::cout << "-> init Ink complete"<< "\n";
-   clearField(Ink.foo, 0.0);
+      clearField(Ink.foo, 0.0);
 
    Divergence = createField(fieldWidth, fieldHeight);
       std::cout << "-> init Divergence complete"<< "\n";
@@ -573,11 +663,11 @@ void addedForce(Field velocity, Field destination) {
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight));
 
-   printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
-   printf("timeStep: %f,\n", dt);
-   printf("impulseRadius: %f\n", forceRadius);
-   printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
-   printf("scale: %f, %f\n\n", 1.0f / (fieldWidth-1.0), 1.0f / (fieldHeight-1.0));
+   //printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
+   //printf("timeStep: %f,\n", dt);
+   //printf("impulseRadius: %f\n", forceRadius);
+   //printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
+   //printf("scale: %f, %f\n\n", 1.0f / (fieldWidth-1.0), 1.0f / (fieldHeight-1.0));
 
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
@@ -590,7 +680,7 @@ void addedForce(Field velocity, Field destination) {
    unbind();
 }
 
-void advect(Field velocity, Field position, Field boundary,Field destination, float dissipationVal){
+void advect(Field velocity, Field position, Field boundary,Field destination, float dissipationVal, bool advectingInk) {
    
    GLuint shaderHandle = shaders->advect;
 
@@ -599,6 +689,7 @@ void advect(Field velocity, Field position, Field boundary,Field destination, fl
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
    GLuint dissipation = glGetUniformLocation(shaderHandle, "dissipation");
+   GLuint isInk = glGetUniformLocation(shaderHandle, "isInk");
 
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
@@ -607,6 +698,7 @@ void advect(Field velocity, Field position, Field boundary,Field destination, fl
 
    glUniform1f(timeStep, dt);
    glUniform1f(dissipation, dissipationVal);
+   glUniform1i(isInk, advectingInk);
 
    glUniform1i(posTex, 1); // texture 1, a sampler2D.
    glUniform1i (boundaryTex, 2);
@@ -631,7 +723,7 @@ void advect(Field velocity, Field position, Field boundary,Field destination, fl
    unbind();
 }
 
-void jacobi(Field xField, Field bField, Field boundary,Field destination, float scale, float alphaParameter, float betaParameter){
+void jacobi(Field xField, Field bField, Field boundary,Field destination, bool isVelo, float alphaParameter, float betaParameter){
 
    /*this gets called a number of times in a loop. 
       used for poisson pressure,
@@ -655,13 +747,15 @@ void jacobi(Field xField, Field bField, Field boundary,Field destination, float 
 
    GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
    GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
+   GLuint isVeloPtr = glGetUniformLocation(shaderHandle, "Velocity");
 
    //GLuint x = glGetUniformLocation(shaderHandle, "x");
    GLuint b = glGetUniformLocation(shaderHandle, "b");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    glUniform1f(alpha, alphaParameter);
-   glUniform1f(rBeta, 1/betaParameter);
+   glUniform1f(rBeta, 1.0f/betaParameter);
+   glUniform1f(isVeloPtr, isVelo);
    glUniform1i(b, 1);
    glUniform1i (boundaryTex, 2);
 
@@ -698,7 +792,8 @@ void subtractGradient(Field velocityField, Field pressureField, Field boundary, 
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   glUniform1f(gradScale, 0.5/(fieldWidth));
+   //glUniform1f(gradScale, 0.5/(fieldWidth));
+   glUniform1f(gradScale, 0.5/(float)cellSize);
    glUniform1i(pressure, 1);
    glUniform1i (boundaryTex, 2);
 
@@ -730,7 +825,10 @@ void divergence(Field velocityField, Field boundary, Field destination){
    GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   glUniform1f(halfrdx, 0.5f/fieldWidth);
+   //glUniform1f(halfrdx, 0.5f/(float)fieldWidth); 
+   // Textbook wording makes it sound like above but it's only 0.00078125 at width of 640
+   // 0.5/cellSize gives a more reasonable value
+   glUniform1f(halfrdx, 0.5f/(float)cellSize);
    glUniform1i (boundaryTex, 1);
 
    //bindframe buffer to the destination field
