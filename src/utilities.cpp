@@ -20,9 +20,6 @@ void initShaders(Shaders* shaders) {
 	shaders->addedForce = InitShader("vshader.glsl", "addedForce.glsl");
 		std::cout << "->-> init addedForce complete\n";
 	
-	shaders->boundaries = InitShader("vshader.glsl", "boundaries.glsl");
-		std::cout << "->-> init boundaries complete\n";
-
 	shaders->addedInk = InitShader("vshader.glsl", "addedInk.glsl");
 		std::cout << "->-> init addedInk complete\n";
 }
@@ -47,17 +44,12 @@ Field createField(GLint width, GLint height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
 
-	// Do linear filtering
+	// Do linear filtering on textures
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Generate texture to width & height
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fieldWidth, fieldHeight, 0, GL_RGB, GL_FLOAT, 0);
-
-	// Create color buffer (??? - May want to remove if not using)
-	GLuint color;
-	glGenRenderbuffers(1, &color);
-	glBindRenderbuffer(GL_RENDERBUFFER, color);
 
 	// Assign texture to frame buffer (as a color attachment)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);

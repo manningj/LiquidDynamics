@@ -1,21 +1,13 @@
 #version 150
 
-in vec4 f_colour;
 out vec4 out_colour;
 
 uniform sampler2D Sampler;
-uniform vec3 FillColor;
-uniform vec2 Scale; // 1/fieldWith 1/fieldHeight
+uniform vec2 Scale; // 1/fieldWith, 1/fieldHeight
 
 void main() 
 {
- //vec3 L = FillColor;
+  // Get texture at current fragment and display it
   vec3 curr = texture(Sampler, gl_FragCoord.xy * Scale).rgb;
   out_colour = vec4(curr, 1);
-
-  //   if (gl_FragCoord.x < 1 || gl_FragCoord.y < 2 ) {
-  //   out_colour = vec4(1.0,0.0,0.0,1.0);
-  // } else if (gl_FragCoord.x > 638 || gl_FragCoord.y > 638) { 
-  //   out_colour = vec4(1.0,0.0,0.0,1.0);
-  // }
 }

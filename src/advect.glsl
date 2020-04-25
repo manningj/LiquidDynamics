@@ -7,9 +7,7 @@ uniform float timeStep; //dt
 uniform float dissipation; //diffusion value
 uniform bool isInk;
 uniform sampler2D veloTex; //velocity texture
-uniform sampler2D posTex;// position texture.
-uniform sampler2D boundaryTex;
-
+uniform sampler2D posTex; // position texture.
 
 // formula is q(x,t + dt) = q(x - u(x,t)dt,t)
 
@@ -23,9 +21,8 @@ using the texture parameters we set earlier.
 */
 void main() 
 {
-
+  // check if we're a boundary, if so, just get to zero velocity/ink
   if ((gl_FragCoord.x > 638 || gl_FragCoord.x < 1) || (gl_FragCoord.y > 638 || gl_FragCoord.y < 1)) { 
-    
     if (isInk) {
       newX = vec4(0.0,0.0,0.0, 1);
     } else {
@@ -34,38 +31,16 @@ void main()
   } else {
     vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
 
-    // vec3 boundaryCoord = texture(boundaryTex, Scale * fragCoord).rgb;
-    // if(boundaryCoord.z == 1.0){
-    //     newX = vec4(0.5f, 0.5f, 0.5f, 1.0);
-    //     return;
-    // }
-
     //this gets the samples the value of velo tex at the window coordinates of the fragment.
     // u = the velocity of this fragment(or cell)
     vec2 u = ((texture(veloTex, Scale * fragCoord).xy) - 0.5) * 640.0f;; 
     //go to previous position.
     
     vec2 pos = (fragCoord - timeStep * u )* Scale;
-    //this gets the new advectd pos.
-    
+    //this gets the new advectedd pos.
 
-    // if (u.x > 0.5 || u.y > 0.5) {
-      //newX = vec4(1.0);
-      // newX = vec4(0.5,0.5,0.5, 1.0);
-    // } else {
-
-
-
-      // NEED TO ALTER!!!!! (look at the first commented section of the boundaries shader)
-
-      //newX = isBoundary*vec4(texture(posTex, pos).xy, 0.5, 1.0);
-      vec3 newU = texture(posTex, pos).xyz;
-      newX = vec4(dissipation *newU.xyz, 1.0);
-
-
-
-
-
+    vec3 newU = texture(posTex, pos).xyz;
+    newX = vec4(dissipation *newU.xyz, 1.0);
   }
 }
 

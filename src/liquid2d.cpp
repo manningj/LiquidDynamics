@@ -1,153 +1,67 @@
+//----------------------------------------------------------------------------
+// NAMES		       : Mark Robitaille
+// COURSE		    : COMP 4490
+// INSTRUCTOR	    : John Braico
+// PROJECT         : Fluid Dynamics Demonstration
+//
+// REMARKS	: This program shows basic fluid dynamics by utitizing a solution to the
+//         Navier Stokes Equations as described in GPU Gems 1, Chapter 38. Our implementation
+//         has all of the main parts of the equation implemented, but pressure does
+//         behave as expected.
+//
+// CONTROLS	: Click and drag to add force and color/ink to the fluid in the window.
+//         Q or escape key to exit program.
+//         0 to 9 keys will select the current color to add to the fluid.
+//         Space bar to swap between viewing velocity field (u) or color/ink field.
+//			  A key to reset the program to initial state
+//			  W key to increase viscosity
+//			  S key to decrease viscosity
+//			  E key to increase ink color strength
+//			  D key to decrease ink color strength
+//			  R key to increase ink color dissipation
+//			  F key to decrease ink color dissipation
+//			  T key to increase ink color radius
+//			  G key to decrease ink color radius
+//			  Y key to increase velocity radius (value is squared radius)
+//			  H key to increase velocity radius (value is squared radius)
+//			  Z key to clear velocity field
+//			  X key to clear ink color field
+//			  C key to clear currently displayed field
+//			  
+//----------------------------------------------------------------------------
+
 #include "common.h"
 
 const char *WINDOW_TITLE = "Liquid Dynamics";
 const double FRAME_RATE_MS = 1000.0 / 60.0;
 
-
 //-------------------------------------------------------------------
-                     //function prototypes
+
+//function prototypes
 float mouseConvert(int mouseVal, int windowScale);
 void updateBuffer();
 bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
+
 //-------------------------------------------------------------------
 
 //constants and variables
-//constants and variables
 const GLfloat LEFT = -1.0f;
+
 const GLfloat RIGHT = 1.0f;
 const GLfloat TOP = 1.0f;
 const GLfloat BOTTOM = -1.0f;
 const GLfloat Z_NEAR = -1.0f;
 const GLfloat Z_FAR = 1.0f;
 
-//const GLfloat LEFT = -0.5f;
-//const GLfloat RIGHT = 640.5f;
-//const GLfloat TOP = -0.5f;
-//const GLfloat BOTTOM = 640.5f;
-//const GLfloat Z_NEAR = -1.0f;
-//const GLfloat Z_FAR  = 1.0f;
-
-// const GLfloat LEFT = 0.0f;
-// const GLfloat RIGHT = 640.0f;
-// const GLfloat TOP = 0.0f;
-// const GLfloat BOTTOM = 640.0f;
-// const GLfloat Z_NEAR = -1.0f;
-// const GLfloat Z_FAR  = 1.0f;
-
-//boolean used for double clicking
-bool mousePressed = false;
-
 const color4 clearColour = color4(0,0,0,1); //black background
-//--------------------------------------------------------------------
 
- point4 verticesSquare[6] = {
-   point4(-1.0,  1.0,  0.0, 1.0),
-   point4(-1.0, -1.0,  0.0, 1.0),
-   point4(1.0, -1.0,  0.0, 1.0),
-   point4(-1.0,  1.0, 0.0, 1.0),
-   point4(1.0, -1.0,  0.0, 1.0),
-   point4(1.0,  1.0,  0.0, 1.0)
- };
+GLuint vPosition[7];
+GLuint Projection[7];
 
-// point4 verticesLine[2]{
-//     point4(0.0,  0.0,  0.0, 1.0),
-//     point4(0.0,  0.0,  0.0, 1.0),
-// };
+GLuint VAO;
+GLuint buffer;
 
-// point4 verticesBoundary[6] = {
-//   point4(-1.0,  1.0,  0.1, 1.0),
-//   point4(-1.0, -1.0,  0.1, 1.0),
-//   point4(1.0, -1.0,  0.1, 1.0),
-//   point4(-1.0,  1.0, 0.1, 1.0),
-//   point4(1.0, -1.0,  0.1, 1.0),
-//   point4(1.0,  1.0,  0.1, 1.0)
-// };
-
-//point4 verticesBoundary[8] = {
-//    point4(-1.0,  1.0,  0.0, 1.0),
-//    point4(-1.0,  -1.0,  0.0, 1.0),
-//
-//    point4(-1.0,  -1.0,  0.0, 1.0),
-//    point4(1.0,  -1.0,  0.0, 1.0),
-//
-//    point4(1.0,  -1.0,  0.0, 1.0),
-//    point4(1.0,  1.0,  0.0, 1.0),
-//
-//    point4(1.0,  1.0,  0.0, 1.0),
-//    point4(-1.0,  1.0,  0.0, 1.0),
-//};
-
-// point4 verticesSquare[6] = {
-//   point4(1.0,  638.0,  0.0, 1.0),
-//   point4(1.0, 1.0,  0.0, 1.0),
-//   point4(638.0, 1.0,  0.0, 1.0),
-//   point4(1.0,  638.0, 0.0, 1.0),
-//   point4(638.0, 1.0,  0.0, 1.0),
-//   point4(638.0,  638.0,  0.0, 1.0)
-// };
-
-//point4 verticesSquare[6] = {
-//  point4(0.0,  639.0,  0.0, 1.0),
-//  point4(0.0, 0.0,  0.0, 1.0),
-//  point4(639.0, 0.0,  0.0, 1.0),
-//  point4(0.0,  639.0, 0.0, 1.0),
-//  point4(639.0, 0.0,  0.0, 1.0),
-//  point4(639.0,  639.0,  0.0, 1.0)
-//};
-
-point4 verticesLine[2]{
-    point4(0.0,  0.0,  0.0, 1.0),
-    point4(0.0,  0.0,  0.0, 1.0),
-};
-
- point4 verticesBoundary[8] = {
-    point4(0.0,  639.0,  0.1, 1.0),
-    point4(0.0,  0.0,  0.1, 1.0),
-
-    point4(0.0,  0.0,  0.1, 1.0),
-    point4(639.0,  0.0,  0.1, 1.0),
-
-    point4(639.0,  0.0,  0.1, 1.0),
-    point4(639.0,  639.0,  0.1, 1.0),
-
-    point4(639.0,  639.0,  0.1, 1.0),
-    point4(0.0,  639.0,  0.1, 1.0),
- };
-
-// point4 verticesBoundary[6] = {
-//  point4(0.0,  639.0,  0.7, 1.0),
-//  point4(0.0, 0.0,  0.7, 1.0),
-//  point4(639.0, 0.0,  0.7, 1.0),
-//  point4(0.0,  639.0, 0.7, 1.0),
-//  point4(639.0, 0.0,  0.7, 1.0),
-//  point4(639.0,  639.0,  0.7, 1.0)
-// };
-
-// point4(0.0,  639.0,  0.0, 1.0),
-//   point4(0.0, 0.0,  0.0, 1.0),
-//   point4(639.0, 0.0,  0.0, 1.0),
-//   point4(0.0,  639.0, 0.0, 1.0),
-//   point4(639.0, 0.0,  0.0, 1.0),
-//   point4(639.0,  639.0,  0.0, 1.0)
-
-//-----------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-
-// GLuint program[2]; // Not needed since we have shader struct
-// 0 is drawTexture, 1 is addedForce -> May need to restructure data structure to handle all shaders?
-// GLuint VAO;
-// GLuint buffer;
-GLuint vPosition[8];
-GLuint Projection[8];
-
-// enum programs {drawTexture, addedForce};
-
-// GLuint Projection, Colour;
-GLuint VAOs[2];
-GLuint buffers[2];
-// GLuint program, vPosition;
-Shaders temp = {0,0,0,0,0,0,0,0};
+Shaders temp = {0,0,0,0,0,0,0};
 Shaders* shaders = &temp;
 
 float viscosity = 0.7f;
@@ -155,11 +69,10 @@ float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Ink, Density;
 Field Boundaries, Divergence;
 
-
 bool showVelocity = false;
-float inkDis = inkDissipation;
-float veloDis = 1.0f;
 
+// Color settings when adding ink/color
+float inkDis = inkDissipation;
 float inkRadius = 25.0f;
 color3 inkColors[10] = {
    color3(1.0,1.0,1.0), // White
@@ -178,10 +91,26 @@ int selectedColor = 0;
 
 // Velocity settings when adding force
 const float VELOCITY_SCALE = 10.0f; // Lower number increases intensity of force
+float veloDis = 1.0f;
 float forceRadius = 500.0f; // Affects radius of sqrt this value
 
-float prevTime; // General time (updated per frame)
-float prevTimeDrag; // Time when adding forces
+//--------------------------------------------------------------------
+
+// Coordinates used for drawing and adding force/ink
+
+ point4 verticesSquare[6] = {
+   point4(-1.0,  1.0,  0.0, 1.0),
+   point4(-1.0, -1.0,  0.0, 1.0),
+   point4(1.0, -1.0,  0.0, 1.0),
+   point4(-1.0,  1.0, 0.0, 1.0),
+   point4(1.0, -1.0,  0.0, 1.0),
+   point4(1.0,  1.0,  0.0, 1.0)
+ };
+
+point4 verticesLine[2]{
+    point4(0.0,  0.0,  0.0, 1.0),
+    point4(0.0,  0.0,  0.0, 1.0),
+};
 
 //----------------------------------------------------------------------------
 
@@ -191,72 +120,56 @@ void init()
 {
    initFields(); // Set up fields and initialize all shaders
   
-   printf("INIT");
+   printf("INIT\n");
 
-   // Set up draw texture program
-
+   // Grab the vertex attributes and projection uniforms
    vPosition[0] = glGetAttribLocation(shaders->drawTexture, "vPosition");
    vPosition[1] = glGetAttribLocation(shaders->advect, "vPosition");
    vPosition[2] = glGetAttribLocation(shaders->jacobi, "vPosition");
    vPosition[3] = glGetAttribLocation(shaders->divergence, "vPosition");
    vPosition[4] = glGetAttribLocation(shaders->subtractGradient, "vPosition");
    vPosition[5] = glGetAttribLocation(shaders->addedForce, "vPosition");
-   vPosition[6] = glGetAttribLocation(shaders->boundaries, "vPosition");
-   vPosition[7] = glGetAttribLocation(shaders->addedInk, "vPosition");
+   vPosition[6] = glGetAttribLocation(shaders->addedInk, "vPosition");
 
    Projection[0] = glGetUniformLocation(shaders->drawTexture, "Projection");
    Projection[1] = glGetUniformLocation(shaders->advect, "Projection");
    Projection[2] = glGetUniformLocation(shaders->jacobi, "Projection");
    Projection[3] = glGetUniformLocation(shaders->divergence, "Projection");
    Projection[4] = glGetUniformLocation(shaders->subtractGradient, "Projection");
-   Projection[5] = glGetUniformLocation(shaders->addedForce, "Projection");  
-   Projection[6] = glGetUniformLocation(shaders->boundaries, "Projection");   
-   Projection[7] = glGetUniformLocation(shaders->addedInk, "Projection");   
+   Projection[5] = glGetUniformLocation(shaders->addedForce, "Projection");   
+   Projection[6] = glGetUniformLocation(shaders->addedInk, "Projection");   
  
-   // Set up added force program
-   
-   //glGenVertexArrays(2, VAOs);
-
+   // Set up the VAO/VBO
    updateBuffer();
 
    glEnable(GL_DEPTH_TEST);
 
    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
-   //prevTime = std::clock();
-
-   // Initialize the boundaries field (using Pair in case we have time for moving boundaries)
-   //boundaries(Boundaries.foo);
-   //swapField(&Boundaries);
 }
 
 //----------------------------------------------------------------------------
 
 void display(void)
 {
-   //dt = (std::clock() - prevTime)/(float)CLOCKS_PER_SEC;
-   //prevTime = std::clock();
-
-   runtime();
+   runtime(); // Solve the Navier Stokes Equation
       
    GLuint shaderHandle = shaders->drawTexture;
+
    // Clear output framebuffer
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    // Draw texture
    glUseProgram(shaderHandle);
-   glBindVertexArray(VAOs[0]); // Drawing square
-   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+   glBindVertexArray(VAO); // Drawing square
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
    // Set uniforms
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
-   glUniform2f(scale, 1.0f / (windowWidth), 1.0f / (windowHeight)); // Minus by one to convert 0-639 to 0-1
+   glUniform2f(scale, 1.0f / (windowWidth), 1.0f / (windowHeight));
 
-   // Bind texture and draw
+   // Bind selected texture and draw
    glActiveTexture(GL_TEXTURE0);
-   //glEnable(GL_BLEND);
-   // glBindTexture(GL_TEXTURE_2D, Divergence.texture);
-   //glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
 
    if (showVelocity) {
       glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
@@ -264,19 +177,7 @@ void display(void)
       glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
    }
    
-   
    glDrawArrays(GL_TRIANGLES, 0, 6);
-  // glDisable(GL_BLEND);
-
-   // //DRAW SECOND SQUARE
-
-   // shaderHandle = shaders->boundaries;
-   // glUseProgram(shaderHandle);
-   // glBindVertexArray(VAOs[1]);
-   // glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
- 
-   // glBindTexture(GL_TEXTURE_2D, 0);
-   // glDrawArrays(GL_TRIANGLES, 0, 6);
 
    glutSwapBuffers();   
 }
@@ -292,8 +193,7 @@ void keyboard(unsigned char key, int x, int y)
    case 'Q':
       exit(EXIT_SUCCESS);
       break;
-   case ' ':
-      //spacebar, in case we want it
+   case ' ': //spacebar
       showVelocity = !showVelocity;
       printf("Changing views between velocity and ink.\n");
       break;
@@ -325,7 +225,7 @@ void keyboard(unsigned char key, int x, int y)
       printf("Viscosity: %f\n", viscosity);
       break;
    case 's':
-      viscosity = glm::max(0.0, viscosity - 0.1);
+      viscosity = glm::max(0.1, viscosity - 0.1);
       printf("Viscosity: %f\n", viscosity);
       break;
    case 'e':
@@ -386,12 +286,13 @@ void mouse(int button, int state, int x, int y)
 {
    //left button click
    if(button == GLUT_LEFT_BUTTON) {
-      // Get initial point for adding force
+      // Get initial point for adding force/ink
       verticesLine[0] = point4((float)x-1.0, (float)windowHeight -1.0 -(float)y, 0.0, 1.0);
    }
    //right button click
    if(button == GLUT_RIGHT_BUTTON) {
-       // Add ink if right click?
+      // Get initial point for adding force/ink
+       verticesLine[0] = point4((float)x-1.0, (float)windowHeight -1.0 -(float)y, 0.0, 1.0);
    }
 }
 
@@ -399,10 +300,9 @@ void mouse(int button, int state, int x, int y)
 
 void mouseDrag(int x, int y) { // Add force
    verticesLine[1] = point4((float)x-1.0, (float)windowHeight- 1.0  -(float)y, 0.0, 1.0);
-   printf("%d, %d\n", x-1, windowHeight - y-1);
+   // Add ink and force
    addedInk(Ink.foo, Ink.bar);
    swapField(&Ink);
-   
    addedForce(Velocity.foo, Velocity.bar);
    swapField(&Velocity);
    verticesLine[0] = verticesLine[1]; // Start point for next force
@@ -410,24 +310,21 @@ void mouseDrag(int x, int y) { // Add force
 
 //----------------------------------------------------------------------------
 
-//called every frame
 void update(void)
-{
-
-}
+{ }
 
 //----------------------------------------------------------------------------
 
 //called on window resize
 void reshape(int width, int height)
 {
-
-    printf("%d, %d - SIZE",width, height);
+   printf("Viewport set to %d, %d\n", windowWidth, windowHeight);
    glViewport(0, 0, windowWidth, windowHeight);
    
-  
+   // Set the orthoprojection matrix
    glm::mat4 projection = glm::ortho(LEFT, RIGHT, BOTTOM, TOP, Z_NEAR, Z_FAR);
    
+   // Set the projection uniforms to all of the shaders
    int i = 0;
    glUseProgram(shaders->drawTexture);
    glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
@@ -445,9 +342,6 @@ void reshape(int width, int height)
    glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
 
    glUseProgram(shaders->addedForce);
-   glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
-
-   glUseProgram(shaders->boundaries);
    glUniformMatrix4fv(Projection[i++], 1, GL_FALSE, glm::value_ptr(projection));
 
    glUseProgram(shaders->addedInk);
@@ -468,37 +362,19 @@ point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowSc
 //rebinds VAO's
  void updateBuffer(){
 
-   glGenVertexArrays(2, VAOs);
+   glGenVertexArrays(1, &VAO);
      // Create and initialize a buffer object
-   glGenBuffers(2, buffers);
+   glGenBuffers(1, &buffer);
    /*########################################################################*/
          // Bind VAO
-         glBindVertexArray(VAOs[0]);
+         glBindVertexArray(VAO);
          // Bind VBO to VAO
-         glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+         glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
          glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
 
          // Set vPosition vertex attibute for shader(s)
          assignAttrib();
-
-
-         // Now set up the boundary border vPosition
-         
-
-         //// Bind VAO
-         //glBindVertexArray(VAOs[1]);
-         //// Bind VBO to VAO
-         //glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-
-         //glBufferData(GL_ARRAY_BUFFER, sizeof(verticesBoundary), verticesBoundary, GL_STATIC_DRAW);
-
-         // Set vPosition vertex attibute for shader
-        /* glEnableVertexAttribArray(vPosition[6]);
-         glVertexAttribPointer(vPosition[6], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-         glBindVertexArray(VAOs[0]);
-         glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);*/
 
    /*########################################################################*/
 }
@@ -541,12 +417,8 @@ void assignAttrib(){
       glEnableVertexAttribArray(vPosition[i]);
       glVertexAttribPointer(vPosition[i++], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
-    glUseProgram(shaders->boundaries);
-      glEnableVertexAttribArray(vPosition[6]);
-      glVertexAttribPointer(vPosition[6], 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-    glBindVertexArray(VAOs[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
 }
 //----------------------------------------------------------------------------
 
@@ -557,16 +429,17 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 //----------------------------------------------------------------------------
 
 void runtime(){
-
-   // GPU Gems pseudocode:
-   // Apply the first 3 operators in Equation 12.
+   // GPU Gems 1 Chapter 38 pseudocode:
+   //
+   // "Apply the first 3 operators in Equation 12.
    // u = advect(u);
    // u = diffuse (u) ;
    // u = addForces(u);
    // Now apply the projection operator to the result.
    // p = computePressure(u);
-   // u = subtractPressureGradient(u, p); 
-   float v = viscosity/5; //*300.0f;
+   // u = subtractPressureGradient(u, p);"
+
+   float v = viscosity;
 
    float  diffusionAlpha =(cellSize*cellSize) /(v*dt);
    float  diffusionBeta = (4 + (cellSize*cellSize) /(v*dt));
@@ -574,31 +447,34 @@ void runtime(){
    float  pressureAlpha = (-cellSize*cellSize);
    float  pressureBeta = 4.0f;
 
-   //boundaries(Boundaries);
-
+   // Advect velocity
    advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, veloDis, false);
    swapField(&Velocity);
 
+   // Advent the ink based on the velocity
    advect(Velocity.foo, Ink.foo, Boundaries, Ink.bar, inkDis, true);
    swapField(&Ink);
 
+   // Calculate viscous diffusion
    for(int i = 0; i < jacobiIterations; ++i){
       jacobi(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, true, diffusionAlpha,diffusionBeta);
       swapField(&Velocity);
    }
 
+   // Find divergence
    divergence(Velocity.foo, Boundaries, Divergence);
    
    clearField(Pressure.foo, 0.0);
 
+   // Apply divergence on pressure field
    for(int i = 0; i < jacobiIterations/2; ++i){
       jacobi(Pressure.foo, Divergence, Boundaries, Pressure.bar, false, pressureAlpha,pressureBeta);
       swapField(&Pressure);
    }
 
+   // Subtract the gradient from velocity to get final velocity field
    subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
    swapField(&Velocity);
-   
 }
 
 void initFields(){
@@ -642,7 +518,6 @@ void unbind() {
    glBindTexture(GL_TEXTURE_2D, 0); //unbind tex0
 
    glBindFramebuffer(GL_FRAMEBUFFER,0); //unbind framebuffer
-   glDisable(GL_BLEND);
 }
 
 void addedForce(Field velocity, Field destination) {
@@ -674,8 +549,8 @@ void addedForce(Field velocity, Field destination) {
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocity.texture);
 
-   glBindVertexArray(VAOs[0]);
-   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+   glBindVertexArray(VAO);
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
    glDrawArrays(GL_TRIANGLES, 0, 6);;
    unbind();
 }
@@ -821,62 +696,27 @@ void divergence(Field velocityField, Field boundary, Field destination){
    GLuint shaderHandle = shaders->divergence;
    glUseProgram(shaderHandle);
 
-   //GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
    GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   //glUniform1f(halfrdx, 0.5f/(float)fieldWidth); 
+   // glUniform1f(halfrdx, 0.5f/(float)fieldWidth); 
    // Textbook wording makes it sound like above but it's only 0.00078125 at width of 640
    // 0.5/cellSize gives a more reasonable value
    glUniform1f(halfrdx, 0.5f/(float)cellSize);
    glUniform1i (boundaryTex, 1);
 
-   //bindframe buffer to the destination field
+   // bind frame buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
-   //set texture 0 to be the velocity field
+   // set texture 0 to be the velocity field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocityField.texture);
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, boundary.texture);
-   //use the shaders
+   // use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   //unbind everything
+   // unbind everything
    unbind();
-
-
-}
-
-void boundaries(Field destination){
-   GLuint shaderHandle = shaders->boundaries;
-
-   glUseProgram(shaderHandle);
-   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   glBindVertexArray(VAOs[1]);
-   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-
-   GLuint offset = glGetUniformLocation(shaderHandle, "Offset");
-
-  // NOT SURE IF IN CORRECT ORDER?
-  point2 offsetArray[4] = {
-     point2(1.0, 0.5), 
-     point2(0.5, 1.0),
-     point2(0.0, 0.5),
-     point2(0.5, 0.0)
-  };
-
-  point2 off;
-  for(int i = 0; i < 4; i++){
-     off = offsetArray[i];
-     glUniform2f(offset, off.x, off.y);
-     glDrawArrays(GL_LINES,i*2, 2);
-  }
-   
-   unbind();
-
-   glBindVertexArray(VAOs[0]);
-   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 }
 
 void addedInk(Field canvas, Field destination) {
@@ -901,8 +741,8 @@ void addedInk(Field canvas, Field destination) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, canvas.texture);
 
-    glBindVertexArray(VAOs[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     unbind();
 }

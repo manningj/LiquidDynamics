@@ -83,9 +83,7 @@ typedef struct shaders_struct {
     GLuint divergence;
     GLuint subtractGradient;
     GLuint addedForce;
-    GLuint boundaries;
     GLuint addedInk;
-    //more items here eventually
 } Shaders;
 
 // utilities.cpp
@@ -97,17 +95,15 @@ void swapField(Pair* fieldPair);
 void unbind();
 
 // liquid.cpp
-// Function for every item in shader struct (to calculate)
-// Will likely be in liquid2d.cpp
 void runtime();
 void assignAttrib();
 void initFields();
+// SLAB OPERATIONS
 void addedForce(Field velocity, Field destination);
 void advect(Field velocity, Field pressure, Field boundary, Field destination, float dissipationVal, bool advectingInk);
 void subtractGradient(Field velocity, Field pressure,Field boundary, Field destination);
 void divergence(Field velocityField,Field boundary,  Field destination);
 void jacobi(Field xField, Field bField,Field boundary, Field destination,  bool isVelo, float alphaParameter, float betaParameter);
-
 void boundaries(Field destination);
 void addedInk(Field canvas, Field destination);
 #endif
