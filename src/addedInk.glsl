@@ -16,7 +16,7 @@ void main()
 {
   // check if we're a boundary, if so, just get to zero color
   if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
-    out_colour = vec4(0.0,0.0,0.0, 1);
+    out_colour = vec4(0.0,0.0,0.0,1.0);
   } else {
     // Grab the current velocity
     vec3 curr = texture(Sampler, gl_FragCoord.xy*Scale).rgb;

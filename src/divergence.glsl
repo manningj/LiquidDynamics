@@ -2,8 +2,9 @@
 
 out vec4 fragDivergence;
 
-uniform sampler2D velocity;
-uniform float halfrdx; // half of the reciprocal of dx
+uniform sampler2D Velocity;
+uniform float Halfrdx; // half of the reciprocal of dx
+uniform float VelocityScale; // To undo scaling of velocity in C++ code
 // To find if we are interior or are a boundary
 uniform vec2 InteriorRangeMin;
 uniform vec2 InteriorRangeMax;
@@ -17,10 +18,10 @@ void main(){
     // Check if current fragment is a boundary
     if (!isBoundary(fragCoord.x, fragCoord.y)) {
         // Find neighboring velocities
-        vec2 vT = texelFetchOffset(velocity, fragCoord, 0, ivec2(0, 1)).xy * 10.0f;
-        vec2 vB = texelFetchOffset(velocity, fragCoord, 0, ivec2(0, -1)).xy * 10.0f;
-        vec2 vR = texelFetchOffset(velocity, fragCoord, 0, ivec2(1, 0)).xy * 10.0f;
-        vec2 vL = texelFetchOffset(velocity, fragCoord, 0, ivec2(-1, 0)).xy * 10.0f;
+        vec2 vT = texelFetchOffset(velocity, fragCoord, 0, ivec2(0, 1)).xy * VelocityScale;
+        vec2 vB = texelFetchOffset(velocity, fragCoord, 0, ivec2(0, -1)).xy * VelocityScale;
+        vec2 vR = texelFetchOffset(velocity, fragCoord, 0, ivec2(1, 0)).xy * VelocityScale;
+        vec2 vL = texelFetchOffset(velocity, fragCoord, 0, ivec2(-1, 0)).xy * VelocityScale;
 
         // Calculate inverse velocity in case one of the neighbors is a boundary
         vec4 center = texelFetch(velocity, fragCoord, 0);
@@ -29,7 +30,7 @@ void main(){
         centerV = (centerV * -1.0); // invert if velocity 
         centerV = (centerV + 1.0f)/2.0f; // convert back to texture range (0,1)
         
-        center = centerV * 10.0f;
+        center = centerV * VelocityScale;
 
         // Check if boundary, if so set to inverse center
         if(isBoundary(fragCoord.x, fragCoord.y+1.0)) { 

@@ -500,19 +500,19 @@ void initFields(){
 }
 
 void unbind() {
-   //after each call to a shader program, 
-   //we should remove the shader specific bindings.
-   //we do this by bindining them to "0";
+   // After each call to a shader program, 
+   // We should remove the shader specific bindings for textures to avoid possible errors.
+   // We do this by binding them to "0";
    glActiveTexture(GL_TEXTURE2);
-   glBindTexture(GL_TEXTURE_2D, 0); //unbind tex2
+   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex2
 
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, 0); // unbind tex1
 
    glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, 0); //unbind tex0
+   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex0
 
-   glBindFramebuffer(GL_FRAMEBUFFER,0); //unbind framebuffer
+   glBindFramebuffer(GL_FRAMEBUFFER,0); // unbind framebuffer
 }
 
 void addedForce(Field velocity, Field destination) {
@@ -555,27 +555,28 @@ void advect(Field velocity, Field position, Field destination, float dissipation
    glUseProgram(shaderHandle);
 
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
-   GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
-   GLuint dissipation = glGetUniformLocation(shaderHandle, "dissipation");
-   GLuint isInk = glGetUniformLocation(shaderHandle, "isInk");
+   GLuint fieldSize = glGetUniformLocation(shaderHandle, "FieldSize");
+   GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
+   GLuint dissipation = glGetUniformLocation(shaderHandle, "Dissipation");
+   GLuint isInk = glGetUniformLocation(shaderHandle, "IsInk");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
 
    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight)); // rdx is 1/dx and dy
-
+   glUniform2f(fieldSize, fieldWidth,fieldHeight);
    glUniform1f(timeStep, dt);
    glUniform1f(dissipation, dissipationVal);
    glUniform1i(isInk, advectingInk);
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
-   glUniform1i(posTex, 1); // texture 1, a sampler2D.
+   glUniform1i(posTex, 1); // texture 1 is a sampler2D in GLSL shader
    // bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+
    // set texture 0 to be the velocity field
-   
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocity.texture);
 
@@ -647,13 +648,13 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
 
    glUseProgram(shaderHandle);
 
-  // GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
    GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    //glUniform1f(gradScale, 0.5/(fieldWidth));
+   // Below gives more appropriate results after fiddling
    glUniform1f(gradScale, 0.5/(float)cellSize);
    glUniform1i(pressure, 1);
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
@@ -681,7 +682,8 @@ void divergence(Field velocityField, Field destination){
    GLuint shaderHandle = shaders->divergence;
    glUseProgram(shaderHandle);
 
-   GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
+   GLuint halfrdx = glGetUniformLocation(shaderHandle, "Halfrdx");
+   GLuint velocityScale = glGetUniformLocation(shaderHandle, "VelocityScale");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
@@ -689,6 +691,7 @@ void divergence(Field velocityField, Field destination){
    // Textbook wording makes it sound like above but it's only 0.00078125 at width of 640
    // 0.5/cellSize gives a more reasonable value
    glUniform1f(halfrdx, 0.5f/(float)cellSize);
+   glUniform1f(velocityScale, VELOCITY_SCALE);
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
