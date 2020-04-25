@@ -12,12 +12,21 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 //-------------------------------------------------------------------
 
 //constants and variables
+
 const GLfloat LEFT = -0.5f;
-const GLfloat RIGHT = 638.5f;
+const GLfloat RIGHT = 640.5f;
 const GLfloat TOP = -0.5f;
-const GLfloat BOTTOM = 638.5f;
+const GLfloat BOTTOM = 640.5f;
 const GLfloat Z_NEAR = -1.0f;
 const GLfloat Z_FAR  = 1.0f;
+
+// const GLfloat LEFT = 0.0f;
+// const GLfloat RIGHT = 640.0f;
+// const GLfloat TOP = 0.0f;
+// const GLfloat BOTTOM = 640.0f;
+// const GLfloat Z_NEAR = -1.0f;
+// const GLfloat Z_FAR  = 1.0f;
+
 //boolean used for double clicking
 bool mousePressed = false;
 
@@ -234,7 +243,7 @@ void display(void)
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
    //glEnable(GL_BLEND);
-   glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
+   glBindTexture(GL_TEXTURE_2D, Boundaries.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
   // glDisable(GL_BLEND);
@@ -487,12 +496,6 @@ void runtime(){
       swapField(&Velocity);
    }
 
-   // addedInk(Ink.foo, Ink.bar);
-   // swapField(&Ink);
-   
-   // addedForce(Velocity.foo, Velocity.bar);
-   // swapField(&Velocity);
-   // verticesLine[0] = verticesLine[1]; // Start point for next force
 
    divergence(Velocity.foo, Boundaries, Divergence);
    
@@ -568,13 +571,13 @@ void addedForce(Field velocity, Field destination) {
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
-   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldWidth));
+   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight));
 
    printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    printf("timeStep: %f,\n", dt);
    printf("impulseRadius: %f\n", forceRadius);
    printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
-   printf("scale: %f, %f\n\n", 1.0f / (fieldWidth-1.0), 1.0f / (fieldWidth-1.0));
+   printf("scale: %f, %f\n\n", 1.0f / (fieldWidth-1.0), 1.0f / (fieldHeight-1.0));
 
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
@@ -652,10 +655,10 @@ void jacobi(Field xField, Field bField, Field boundary,Field destination, float 
 
    GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
    GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
-   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    //GLuint x = glGetUniformLocation(shaderHandle, "x");
    GLuint b = glGetUniformLocation(shaderHandle, "b");
+   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    glUniform1f(alpha, alphaParameter);
    glUniform1f(rBeta, 1/betaParameter);
@@ -674,7 +677,7 @@ void jacobi(Field xField, Field bField, Field boundary,Field destination, float 
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, bField.texture);
    //obstacles stuff here
-   
+
    glActiveTexture(GL_TEXTURE2);
    glBindTexture(GL_TEXTURE_2D, boundary.texture);
    //use the shaders
@@ -695,7 +698,7 @@ void subtractGradient(Field velocityField, Field pressureField, Field boundary, 
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   glUniform1f(gradScale, 1/(fieldWidth));
+   glUniform1f(gradScale, 0.5/(fieldWidth));
    glUniform1i(pressure, 1);
    glUniform1i (boundaryTex, 2);
 
@@ -727,7 +730,7 @@ void divergence(Field velocityField, Field boundary, Field destination){
    GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
    GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
-   glUniform1f(halfrdx, 0.5f/cellSize);
+   glUniform1f(halfrdx, 0.5f/fieldWidth);
    glUniform1i (boundaryTex, 1);
 
    //bindframe buffer to the destination field

@@ -15,7 +15,7 @@ void main(){
     vec3 bC  = texelFetch(boundaryTex, fragCoord, 0).xyz;
 
     if(bC.z < 0){
-        fragOut = vec4(0.5f, 0.5f, 0.5, 1.0f);
+        fragOut = vec4(0.5f, 0.5f, 0.5f, 1.0f);
         return;
     }
 

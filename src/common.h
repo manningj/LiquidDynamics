@@ -29,7 +29,7 @@
 //#define fieldHeight (windowHeight/2)
  
 
- #define jacobiIterations 80
+ #define jacobiIterations 40
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -36,14 +36,14 @@ void main(){
     //if any of the surrounding cells are an obstacle, we want to use the center for velocity/pressure.
     //negative center velocity for velocity, positive center pressure for pressure.
    
-    
+    if(Scale < 0){
     vec4 centerV = (center * 2.0f) -1.0f; //convert to (-1, 1)
     
     centerV = (centerV * Scale); //invert if velocity 
     centerV = (centerV + 1.0f)/2.0f; // convert back to texture range (0,1)
     
     center = centerV;
-    
+    }
 
     //get surrounding boundary cells
     vec4 boundaryTop = texelFetchOffset(boundaryTex, fragCoord, 0, ivec2(0, 1));
@@ -53,6 +53,7 @@ void main(){
 
     //if any of the surrounding cells are an obstacle, we want to use the center for velocity/pressure.
     //negative center velocity for velocity, positive center pressure for pressure.
+    
     if(boundaryTop.z == 1.0){top = center;}
     if(boundaryBot.z == 1.0){bot = center;}
     if(boundaryRight.z == 1.0){right = center;}
