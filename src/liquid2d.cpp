@@ -234,7 +234,7 @@ void display(void)
    // Bind texture and draw
    glActiveTexture(GL_TEXTURE0);
    //glEnable(GL_BLEND);
-   glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
+   glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
    
    glDrawArrays(GL_TRIANGLES, 0, 6);
   // glDisable(GL_BLEND);
@@ -474,18 +474,18 @@ void runtime(){
    float  pressureAlpha = (-cellSize*cellSize);
    float  pressureBeta = 4.0f;
 
-   boundaries(Boundaries);
+   //boundaries(Boundaries);
 
-   advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, 1.0f);
-   swapField(&Velocity);
+   //advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, 1.0f);
+   //swapField(&Velocity);
 
-   advect(Velocity.foo, Ink.foo, Boundaries, Ink.bar, inkDissipation);
-   swapField(&Ink);
+   //advect(Velocity.foo, Ink.foo, Boundaries, Ink.bar, inkDissipation);
+   //swapField(&Ink);
 
-   for(int i = 0; i < jacobiIterations; ++i){
-      jacobi(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar ,-1.0f, diffusionAlpha,diffusionBeta);
-      swapField(&Velocity);
-   }
+   //for(int i = 0; i < jacobiIterations; ++i){
+   //   jacobi(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar ,-1.0f, diffusionAlpha,diffusionBeta);
+   //   swapField(&Velocity);
+   //}
 
    // addedInk(Ink.foo, Ink.bar);
    // swapField(&Ink);
@@ -494,18 +494,18 @@ void runtime(){
    // swapField(&Velocity);
    // verticesLine[0] = verticesLine[1]; // Start point for next force
 
-   divergence(Velocity.foo, Boundaries, Divergence);
-   
-   clearField(Pressure.foo, 0);
+   //divergence(Velocity.foo, Boundaries, Divergence);
+   //
+   //clearField(Pressure.foo, 0);
 
-   for(int i = 0; i < jacobiIterations; ++i){
-      jacobi(Pressure.foo, Divergence, Boundaries, Pressure.bar, 1.0f, pressureAlpha,pressureBeta);
-      swapField(&Pressure);
-   }
+   //for(int i = 0; i < jacobiIterations; ++i){
+   //   jacobi(Pressure.foo, Divergence, Boundaries, Pressure.bar, 1.0f, pressureAlpha,pressureBeta);
+   //   swapField(&Pressure);
+   //}
 
-    subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
-    swapField(&Velocity);
-   
+   // subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
+   // swapField(&Velocity);
+   //
 }
 
 void initFields(){
