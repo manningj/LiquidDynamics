@@ -6,6 +6,9 @@ uniform sampler2D velocity;
 uniform sampler2D pressure;
 
 uniform float gradScale; // 0.5 / gridscale according to GPU Gems
+// To find if we are interior or are a boundary
+uniform vec2 InteriorRangeMin;
+uniform vec2 InteriorRangeMax;
 
 bool isBoundary(float x, float y);
 
@@ -51,7 +54,7 @@ void main(){
 }
 
 bool isBoundary(float x, float y) {
-    if ((gl_FragCoord.x > 638 || gl_FragCoord.x < 1) || (gl_FragCoord.y > 638 || gl_FragCoord.y < 1)) { 
+    if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
         return true;
     }
     return false;

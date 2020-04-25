@@ -5,6 +5,9 @@ out vec4 xNew; //result
 uniform float alpha; 
 uniform float rBeta;
 uniform bool Velocity; // Are we dealing with velocity? If false, it's pressure
+// To find if we are interior or are a boundary
+uniform vec2 InteriorRangeMin;
+uniform vec2 InteriorRangeMax;
 
 uniform sampler2D x; // x vector, Ax = b
 uniform sampler2D b; // b vector, Ax = b
@@ -82,7 +85,7 @@ void main(){
 } // Jacobi main
 
 bool isBoundary(float x, float y) {
-    if ((gl_FragCoord.x > 638 || gl_FragCoord.x < 1) || (gl_FragCoord.y > 638 || gl_FragCoord.y < 1)) { 
+    if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
         return true;
     }
     return false;

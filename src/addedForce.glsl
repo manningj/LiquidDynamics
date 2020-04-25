@@ -7,6 +7,9 @@ uniform float TimeStep; // dt
 uniform float ImpulseRadius; // r
 uniform vec2 ImpulsePosition; // xp and yp
 uniform vec2 Scale; // 1/fieldWith, 1/fieldHeight -> Used to get texture for fragment
+// To find if we are interior or are a boundary
+uniform vec2 InteriorRangeMin;
+uniform vec2 InteriorRangeMax;
 
 // Equation for c (added velocity from forces):
 //        
@@ -15,7 +18,7 @@ uniform vec2 Scale; // 1/fieldWith, 1/fieldHeight -> Used to get texture for fra
 void main() 
 {
   // check if we're a boundary, if so, just get to zero velocity
-  if ((gl_FragCoord.x > 638 || gl_FragCoord.x < 1) || (gl_FragCoord.y > 638 || gl_FragCoord.y < 1)) { 
+  if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
     out_colour = vec4(0.5,0.5,0.5, 1);
   } else {
     // Grab the current velocity

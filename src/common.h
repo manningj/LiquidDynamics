@@ -25,10 +25,12 @@
 #define fieldWidth windowWidth
 #define fieldHeight windowHeight
 #define inkDissipation 0.98f
-//#define fieldWidth (windowWidth/2)
-//#define fieldHeight (windowHeight/2)
+#define interiorRangeMinX 1
+#define interiorRangeMinY 1
+// If we have 640 pixel width starting at 0, then we want to 638
+#define interiorRangeMaxX fieldWidth-2
+#define interiorRangeMaxY fieldHeight-2
  
-
  #define jacobiIterations 40
 
 #include <glm/glm.hpp>
@@ -100,10 +102,10 @@ void assignAttrib();
 void initFields();
 // SLAB OPERATIONS
 void addedForce(Field velocity, Field destination);
-void advect(Field velocity, Field pressure, Field boundary, Field destination, float dissipationVal, bool advectingInk);
-void subtractGradient(Field velocity, Field pressure,Field boundary, Field destination);
-void divergence(Field velocityField,Field boundary,  Field destination);
-void jacobi(Field xField, Field bField,Field boundary, Field destination,  bool isVelo, float alphaParameter, float betaParameter);
+void advect(Field velocity, Field pressure, Field destination, float dissipationVal, bool advectingInk);
+void subtractGradient(Field velocity, Field pressure, Field destination);
+void divergence(Field velocityField,  Field destination);
+void jacobi(Field xField, Field bField, Field destination,  bool isVelo, float alphaParameter, float betaParameter);
 void boundaries(Field destination);
 void addedInk(Field canvas, Field destination);
 #endif

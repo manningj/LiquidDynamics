@@ -8,6 +8,9 @@ uniform float dissipation; //diffusion value
 uniform bool isInk;
 uniform sampler2D veloTex; //velocity texture
 uniform sampler2D posTex; // position texture.
+// To find if we are interior or are a boundary
+uniform vec2 InteriorRangeMin;
+uniform vec2 InteriorRangeMax;
 
 // formula is q(x,t + dt) = q(x - u(x,t)dt,t)
 
@@ -22,7 +25,7 @@ using the texture parameters we set earlier.
 void main() 
 {
   // check if we're a boundary, if so, just get to zero velocity/ink
-  if ((gl_FragCoord.x > 638 || gl_FragCoord.x < 1) || (gl_FragCoord.y > 638 || gl_FragCoord.y < 1)) { 
+  if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
     if (isInk) {
       newX = vec4(0.0,0.0,0.0, 1);
     } else {

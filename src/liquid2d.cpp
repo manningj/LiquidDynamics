@@ -66,8 +66,8 @@ Shaders* shaders = &temp;
 
 float viscosity = 0.7f;
 float dt = 1.0f/60.0f;
-Pair Velocity, Pressure, Ink, Density;
-Field Boundaries, Divergence;
+Pair Velocity, Pressure, Ink;
+Field Divergence;
 
 bool showVelocity = false;
 
@@ -448,32 +448,32 @@ void runtime(){
    float  pressureBeta = 4.0f;
 
    // Advect velocity
-   advect(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, veloDis, false);
+   advect(Velocity.foo, Velocity.foo, Velocity.bar, veloDis, false);
    swapField(&Velocity);
 
    // Advent the ink based on the velocity
-   advect(Velocity.foo, Ink.foo, Boundaries, Ink.bar, inkDis, true);
+   advect(Velocity.foo, Ink.foo, Ink.bar, inkDis, true);
    swapField(&Ink);
 
    // Calculate viscous diffusion
    for(int i = 0; i < jacobiIterations; ++i){
-      jacobi(Velocity.foo, Velocity.foo, Boundaries, Velocity.bar, true, diffusionAlpha,diffusionBeta);
+      jacobi(Velocity.foo, Velocity.foo, Velocity.bar, true, diffusionAlpha,diffusionBeta);
       swapField(&Velocity);
    }
 
    // Find divergence
-   divergence(Velocity.foo, Boundaries, Divergence);
+   divergence(Velocity.foo, Divergence);
    
    clearField(Pressure.foo, 0.0);
 
    // Apply divergence on pressure field
    for(int i = 0; i < jacobiIterations/2; ++i){
-      jacobi(Pressure.foo, Divergence, Boundaries, Pressure.bar, false, pressureAlpha,pressureBeta);
+      jacobi(Pressure.foo, Divergence, Pressure.bar, false, pressureAlpha,pressureBeta);
       swapField(&Pressure);
    }
 
    // Subtract the gradient from velocity to get final velocity field
-   subtractGradient(Velocity.foo, Pressure.foo, Boundaries, Velocity.bar);
+   subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
    swapField(&Velocity);
 }
 
@@ -481,7 +481,7 @@ void initFields(){
       std::cout << "-> init fields started" << "\n";
 
    Velocity = createPair(fieldWidth, fieldHeight);
-      std::cout << "-> init velocity complete"<< "\n";
+      std::cout << "-> init Velocity complete"<< "\n";
    clearField(Velocity.foo, 0.5);
 
    Pressure = createPair(fieldWidth, fieldHeight);
@@ -495,14 +495,9 @@ void initFields(){
    Divergence = createField(fieldWidth, fieldHeight);
       std::cout << "-> init Divergence complete"<< "\n";
 
-   Boundaries = createField(fieldWidth, fieldHeight);
-      std::cout << "-> init Boundaries complete" << "\n";
-      clearField(Boundaries, 0.5);
-
    initShaders(shaders);
       std::cout << "-> init shaders complete"<< "\n";
 }
-
 
 void unbind() {
    //after each call to a shader program, 
@@ -526,23 +521,21 @@ void addedForce(Field velocity, Field destination) {
    
    glUseProgram(shaderHandle);
 
-   GLint newForce = glGetUniformLocation(shaderHandle, "NewForce");
+   GLuint newForce = glGetUniformLocation(shaderHandle, "NewForce");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
-   GLint impulseRadius = glGetUniformLocation(shaderHandle, "ImpulseRadius");
-   GLint impulsePosition = glGetUniformLocation(shaderHandle, "ImpulsePosition");
-   GLint scale = glGetUniformLocation(shaderHandle, "Scale");
+   GLuint impulseRadius = glGetUniformLocation(shaderHandle, "ImpulseRadius");
+   GLuint impulsePosition = glGetUniformLocation(shaderHandle, "ImpulsePosition");
+   GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
+   GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
+   GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x)/ VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight));
-
-   //printf("\nnewForce: %f, %f\n", ((float)verticesLine[1].x - (float)verticesLine[0].x) / VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
-   //printf("timeStep: %f,\n", dt);
-   //printf("impulseRadius: %f\n", forceRadius);
-   //printf("impulsePosition: %f, %f\n", verticesLine[0].x, verticesLine[0].y);
-   //printf("scale: %f, %f\n\n", 1.0f / (fieldWidth-1.0), 1.0f / (fieldHeight-1.0));
+   glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
+   glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
@@ -555,7 +548,7 @@ void addedForce(Field velocity, Field destination) {
    unbind();
 }
 
-void advect(Field velocity, Field position, Field boundary,Field destination, float dissipationVal, bool advectingInk) {
+void advect(Field velocity, Field position, Field destination, float dissipationVal, bool advectingInk) {
    
    GLuint shaderHandle = shaders->advect;
 
@@ -565,21 +558,23 @@ void advect(Field velocity, Field position, Field boundary,Field destination, fl
    GLuint timeStep = glGetUniformLocation(shaderHandle, "timeStep");
    GLuint dissipation = glGetUniformLocation(shaderHandle, "dissipation");
    GLuint isInk = glGetUniformLocation(shaderHandle, "isInk");
+   GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
+   GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
-   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight)); // rdx is 1/dx and dy
 
    glUniform1f(timeStep, dt);
    glUniform1f(dissipation, dissipationVal);
    glUniform1i(isInk, advectingInk);
+   glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
+   glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
    glUniform1i(posTex, 1); // texture 1, a sampler2D.
-   glUniform1i (boundaryTex, 2);
-   //bindframe buffer to the destination field
+   // bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
-   //set texture 0 to be the velocity field
+   // set texture 0 to be the velocity field
    
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocity.texture);
@@ -587,10 +582,6 @@ void advect(Field velocity, Field position, Field boundary,Field destination, fl
    //set texture one to be the position texture
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, position.texture);
-   //obstacles stuff here
-   
-   glActiveTexture(GL_TEXTURE2);
-   glBindTexture(GL_TEXTURE_2D, boundary.texture);
 
    //use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -598,19 +589,16 @@ void advect(Field velocity, Field position, Field boundary,Field destination, fl
    unbind();
 }
 
-void jacobi(Field xField, Field bField, Field boundary,Field destination, bool isVelo, float alphaParameter, float betaParameter){
+void jacobi(Field xField, Field bField, Field destination, bool isVelo, float alphaParameter, float betaParameter){
+   /* This gets called a number of times in a loop. 
+      Used for poisson pressure and for viscous diffusion.
 
-   /*this gets called a number of times in a loop. 
-      used for poisson pressure,
-         and for  viscous diffusion.
-
-
-   for pressure, alpha = -(dx^2)
+   For pressure, alpha = -(dx^2)
                 rbeta = 1/4
                 x = pressure
                 b = divergence
 
-   for diffusion, alpha = dx^2 /v*dt 
+   For diffusion, alpha = dx^2 /v*dt 
                 rbeta = 1/(4 + dx^2 /v*dt)
                 x = velocity
                 d = velocity
@@ -623,40 +611,37 @@ void jacobi(Field xField, Field bField, Field boundary,Field destination, bool i
    GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
    GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
    GLuint isVeloPtr = glGetUniformLocation(shaderHandle, "Velocity");
+   GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
+   GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
-   //GLuint x = glGetUniformLocation(shaderHandle, "x");
    GLuint b = glGetUniformLocation(shaderHandle, "b");
-   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
 
    glUniform1f(alpha, alphaParameter);
    glUniform1f(rBeta, 1.0f/betaParameter);
    glUniform1f(isVeloPtr, isVelo);
+   glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
+   glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
    glUniform1i(b, 1);
-   glUniform1i (boundaryTex, 2);
 
-
-    //bindframe buffer to the destination field
+   // bind frame buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
-   //set texture 0 to be the x field
+   // set texture 0 to be the x field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, xField.texture);
 
-   //set texture one to be the b texture
+   // set texture one to be the b texture
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, bField.texture);
-   //obstacles stuff here
 
-   glActiveTexture(GL_TEXTURE2);
-   glBindTexture(GL_TEXTURE_2D, boundary.texture);
-   //use the shaders
+   // use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   //unbind everything
+   // unbind everything
    unbind();
 }
 
 
-void subtractGradient(Field velocityField, Field pressureField, Field boundary, Field destination){
+void subtractGradient(Field velocityField, Field pressureField, Field destination){
 
    GLuint shaderHandle = shaders->subtractGradient;
 
@@ -665,12 +650,14 @@ void subtractGradient(Field velocityField, Field pressureField, Field boundary, 
   // GLuint velocity=  glGetUniformLocation(shaderHandle, "velocity");
    GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
-   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
+   GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
+   GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    //glUniform1f(gradScale, 0.5/(fieldWidth));
    glUniform1f(gradScale, 0.5/(float)cellSize);
    glUniform1i(pressure, 1);
-   glUniform1i (boundaryTex, 2);
+   glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
+   glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
     //bindframe buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
@@ -682,9 +669,7 @@ void subtractGradient(Field velocityField, Field pressureField, Field boundary, 
    //set texture one to be the pressure field texture
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, pressureField.texture);
-   //obstacles stuff here
-   glActiveTexture(GL_TEXTURE2);
-   glBindTexture(GL_TEXTURE_2D, boundary.texture);
+
    //use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
    //unbind everything
@@ -692,18 +677,20 @@ void subtractGradient(Field velocityField, Field pressureField, Field boundary, 
 
 }
 
-void divergence(Field velocityField, Field boundary, Field destination){
+void divergence(Field velocityField, Field destination){
    GLuint shaderHandle = shaders->divergence;
    glUseProgram(shaderHandle);
 
    GLuint halfrdx=  glGetUniformLocation(shaderHandle, "halfrdx");
-   GLuint boundaryTex = glGetUniformLocation(shaderHandle, "boundaryTex");
+   GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
+   GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    // glUniform1f(halfrdx, 0.5f/(float)fieldWidth); 
    // Textbook wording makes it sound like above but it's only 0.00078125 at width of 640
    // 0.5/cellSize gives a more reasonable value
    glUniform1f(halfrdx, 0.5f/(float)cellSize);
-   glUniform1i (boundaryTex, 1);
+   glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
+   glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
    // bind frame buffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
@@ -711,8 +698,7 @@ void divergence(Field velocityField, Field boundary, Field destination){
    // set texture 0 to be the velocity field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocityField.texture);
-   glActiveTexture(GL_TEXTURE1);
-   glBindTexture(GL_TEXTURE_2D, boundary.texture);
+   
    // use the shaders
    glDrawArrays(GL_TRIANGLES, 0, 6);
    // unbind everything
@@ -724,25 +710,29 @@ void addedInk(Field canvas, Field destination) {
    
    glUseProgram(shaderHandle);
 
-    GLint newInk = glGetUniformLocation(shaderHandle, "NewInk");
-    GLint inkRadiusPtr = glGetUniformLocation(shaderHandle, "InkRadius");
-    GLint inkStrengthPtr = glGetUniformLocation(shaderHandle, "InkStrength");
-    GLint inkPosition = glGetUniformLocation(shaderHandle, "InkPosition");
-    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
+   GLuint newInk = glGetUniformLocation(shaderHandle, "NewInk");
+   GLuint inkRadiusPtr = glGetUniformLocation(shaderHandle, "InkRadius");
+   GLuint inkStrengthPtr = glGetUniformLocation(shaderHandle, "InkStrength");
+   GLuint inkPosition = glGetUniformLocation(shaderHandle, "InkPosition");
+   GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
+   GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
+   GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
-    glUniform3f(newInk, inkColors[selectedColor].r, inkColors[selectedColor].g, inkColors[selectedColor].b);
-    glUniform1f(inkRadiusPtr, inkRadius);
-    glUniform1f(inkStrengthPtr, inkStrength);
-    glUniform2f(inkPosition, verticesLine[0].x, verticesLine[0].y);
-    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight));
+   glUniform3f(newInk, inkColors[selectedColor].r, inkColors[selectedColor].g, inkColors[selectedColor].b);
+   glUniform1f(inkRadiusPtr, inkRadius);
+   glUniform1f(inkStrengthPtr, inkStrength);
+   glUniform2f(inkPosition, verticesLine[0].x, verticesLine[0].y);
+   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight));
+   glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
+   glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
+   glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, canvas.texture);
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, canvas.texture);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    unbind();
+   glBindVertexArray(VAO);
+   glBindBuffer(GL_ARRAY_BUFFER, buffer);
+   glDrawArrays(GL_TRIANGLES, 0, 6);
+   unbind();
 }
