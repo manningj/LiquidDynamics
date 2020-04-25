@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------
-// NAMES		       : Mark Robitaille
+// NAMES		       : Mark Robitaille, John Manning
 // COURSE		    : COMP 4490
 // INSTRUCTOR	    : John Braico
 // PROJECT         : Fluid Dynamics Demonstration
