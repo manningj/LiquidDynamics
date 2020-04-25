@@ -126,8 +126,6 @@ point4 verticesLine[2]{
 void init()
 {
    initFields(); // Set up fields and initialize all shaders
-  
-   printf("INIT\n");
 
    // Grab the vertex attributes and projection uniforms
    vPosition[0] = glGetAttribLocation(shaders->drawTexture, "vPosition");
@@ -152,6 +150,7 @@ void init()
    glEnable(GL_DEPTH_TEST);
 
    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
+   printf("Initialization Complete\n");
 }
 
 //----------------------------------------------------------------------------

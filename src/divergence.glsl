@@ -18,13 +18,13 @@ void main(){
     // Check if current fragment is a boundary
     if (!isBoundary(fragCoord.x, fragCoord.y)) {
         // Find neighboring velocities
-        vec2 vT = texelFetchOffset(velocity, fragCoord, 0, ivec2(0, 1)).xy * VelocityScale;
-        vec2 vB = texelFetchOffset(velocity, fragCoord, 0, ivec2(0, -1)).xy * VelocityScale;
-        vec2 vR = texelFetchOffset(velocity, fragCoord, 0, ivec2(1, 0)).xy * VelocityScale;
-        vec2 vL = texelFetchOffset(velocity, fragCoord, 0, ivec2(-1, 0)).xy * VelocityScale;
+        vec2 vT = texelFetchOffset(Velocity, fragCoord, 0, ivec2(0, 1)).xy * VelocityScale;
+        vec2 vB = texelFetchOffset(Velocity, fragCoord, 0, ivec2(0, -1)).xy * VelocityScale;
+        vec2 vR = texelFetchOffset(Velocity, fragCoord, 0, ivec2(1, 0)).xy * VelocityScale;
+        vec2 vL = texelFetchOffset(Velocity, fragCoord, 0, ivec2(-1, 0)).xy * VelocityScale;
 
         // Calculate inverse velocity in case one of the neighbors is a boundary
-        vec4 center = texelFetch(velocity, fragCoord, 0);
+        vec4 center = texelFetch(Velocity, fragCoord, 0);
         vec4 centerV = (center * 2.0f) -1.0f; // convert to (-1, 1)
 
         centerV = (centerV * -1.0); // invert if velocity 
@@ -46,7 +46,7 @@ void main(){
             vL = vec2(center.xy); 
         }
     
-        float red = halfrdx * ((vR.x - vL.x) + (vT.y - vB.y));
+        float red = Halfrdx * ((vR.x - vL.x) + (vT.y - vB.y));
         fragDivergence = vec4(red,0.0, 0.0, 1.0);
     } else {
         fragDivergence = vec4(0.0,0.0,0.0,1.0);
