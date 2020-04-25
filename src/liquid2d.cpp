@@ -9,10 +9,10 @@
 //         has all of the main parts of the equation implemented, but pressure does
 //         behave as expected.
 //
-// CONTROLS	: Click and drag to add force and color/ink to the fluid in the window.
-//         Q or escape key to exit program.
-//         0 to 9 keys will select the current color to add to the fluid.
-//         Space bar to swap between viewing velocity field (u) or color/ink field.
+// CONTROLS	: Click and drag to add force and color/ink to the fluid in the window
+//         Q or escape key to exit program
+//         0 to 9 keys will select the current color to add to the fluid (see color reference below)
+//         Space bar to swap between viewing velocity field (u) or color/ink field
 //			  A key to reset the program to initial state
 //			  W key to increase viscosity
 //			  S key to decrease viscosity
@@ -28,6 +28,18 @@
 //			  X key to clear ink color field
 //			  C key to clear currently displayed field
 //			  
+// COLOR-KEY REFERENCE :
+//         0 - White
+//         1 - Red
+//         2 - Orange
+//         3 - Yellow
+//         4 - Green
+//         5 - Light Blue
+//         6 - Blue
+//         7 - Purple
+//         8 - Pink
+//         8 - Beige
+//
 //----------------------------------------------------------------------------
 
 #include "common.h"
@@ -36,15 +48,13 @@ const char *WINDOW_TITLE = "Liquid Dynamics";
 const double FRAME_RATE_MS = 1000.0 / 60.0;
 
 //-------------------------------------------------------------------
-
-//function prototypes
+// Function prototypes
 float mouseConvert(int mouseVal, int windowScale);
 void updateBuffer();
 bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 
 //-------------------------------------------------------------------
-
-//constants and variables
+// Constants and variables
 const GLfloat LEFT = -1.0f;
 
 const GLfloat RIGHT = 1.0f;
@@ -95,9 +105,7 @@ float veloDis = 1.0f;
 float forceRadius = 500.0f; // Affects radius of sqrt this value
 
 //--------------------------------------------------------------------
-
 // Coordinates used for drawing and adding force/ink
-
  point4 verticesSquare[6] = {
    point4(-1.0,  1.0,  0.0, 1.0),
    point4(-1.0, -1.0,  0.0, 1.0),
@@ -113,9 +121,8 @@ point4 verticesLine[2]{
 };
 
 //----------------------------------------------------------------------------
-
+//--- init ---
 // OpenGL initialization
-
 void init()
 {
    initFields(); // Set up fields and initialize all shaders
@@ -148,18 +155,20 @@ void init()
 }
 
 //----------------------------------------------------------------------------
-
+//--- display ---
+// Called to draw every frame after init()
 void display(void)
 {
    runtime(); // Solve the Navier Stokes Equation
-      
+   
+   // Get shader to display texture on framebuffer
    GLuint shaderHandle = shaders->drawTexture;
 
    // Clear output framebuffer
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   // Draw texture
+   // Use drawTexture shader
    glUseProgram(shaderHandle);
    glBindVertexArray(VAO); // Drawing square
    glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -177,13 +186,19 @@ void display(void)
       glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
    }
    
+   // Draw a quad on whole screen to display texture
    glDrawArrays(GL_TRIANGLES, 0, 6);
 
    glutSwapBuffers();   
 }
 
 //----------------------------------------------------------------------------
+// Inputs for user
+//----------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------
+//--- keyboard ---
+// GLUT calls this when key is pressed.
 void keyboard(unsigned char key, int x, int y)
 {
    switch (key)
@@ -281,15 +296,15 @@ void keyboard(unsigned char key, int x, int y)
 }
 
 //----------------------------------------------------------------------------
-
-void mouse(int button, int state, int x, int y)
-{
-   //left button click
+//--- mouse ---
+// Called by GLUT when mouse button is clicked and released.
+void mouse(int button, int state, int x, int y) {
+   // Left button click
    if(button == GLUT_LEFT_BUTTON) {
       // Get initial point for adding force/ink
       verticesLine[0] = point4((float)x-1.0, (float)windowHeight -1.0 -(float)y, 0.0, 1.0);
    }
-   //right button click
+   // Right button click
    if(button == GLUT_RIGHT_BUTTON) {
       // Get initial point for adding force/ink
        verticesLine[0] = point4((float)x-1.0, (float)windowHeight -1.0 -(float)y, 0.0, 1.0);
@@ -297,7 +312,8 @@ void mouse(int button, int state, int x, int y)
 }
 
 //----------------------------------------------------------------------------
-
+//--- mouseDrag ---
+// Called by GLUT when mouse button is held down and moves.
 void mouseDrag(int x, int y) { // Add force
    verticesLine[1] = point4((float)x-1.0, (float)windowHeight- 1.0  -(float)y, 0.0, 1.0);
    // Add ink and force
@@ -309,13 +325,17 @@ void mouseDrag(int x, int y) { // Add force
 }
 
 //----------------------------------------------------------------------------
+// More setup functions
+//----------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------
+//--- update ---
 void update(void)
 { }
 
 //----------------------------------------------------------------------------
-
-//called on window resize
+//--- reshape ---
+// Called on window resize
 void reshape(int width, int height)
 {
    printf("Viewport set to %d, %d\n", windowWidth, windowHeight);
@@ -347,38 +367,44 @@ void reshape(int width, int height)
    glUseProgram(shaders->addedInk);
    glUniformMatrix4fv(Projection[i], 1, GL_FALSE, glm::value_ptr(projection));
 }
+
 //----------------------------------------------------------------------------
-//converts screen coordinates to window coordinates
+//--- mouseConvert ---
+// Converts screen coordinates to window coordinates
 GLfloat mouseConvert(int mouseVal, int windowScale){
    return ((float)mouseVal - (float)windowScale/2.0) / ((float)windowScale/2.0);
 }
 
 //----------------------------------------------------------------------------
-//converts screen coordinates to window coordinates
+//--- mouseConvert ---
+// Converts screen coordinates to window coordinates, returns vec2
 point2 mouseConvert(int mouseValX, int mouseValY, int windowScaleX, int windowScaleY) {
    return point2(((float)mouseValX - (float)windowScaleX/2.0) / ((float)windowScaleX/2.0), -((float)mouseValY - (float)windowScaleY / 2.0) / ((float)windowScaleY / 2.0));
 }
 
-//rebinds VAO's
+//----------------------------------------------------------------------------
+//--- updateBuffer ---
+// Generates VAO, VBO, and binds them together
  void updateBuffer(){
-
+   // Create VAO 
    glGenVertexArrays(1, &VAO);
-     // Create and initialize a buffer object
-   glGenBuffers(1, &buffer);
-   /*########################################################################*/
-         // Bind VAO
-         glBindVertexArray(VAO);
-         // Bind VBO to VAO
-         glBindBuffer(GL_ARRAY_BUFFER, buffer);
+      // Create and initialize a buffer object
+      glGenBuffers(1, &buffer);
+      // Bind VAO
+      glBindVertexArray(VAO);
+      // Bind VBO to VAO
+      glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
-         glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(verticesSquare), verticesSquare, GL_STATIC_DRAW);
 
-         // Set vPosition vertex attibute for shader(s)
-         assignAttrib();
+      // Set vPosition vertex attibute for shader(s)
+      assignAttrib();
 
-   /*########################################################################*/
 }
 
+//----------------------------------------------------------------------------
+//--- assignAttrib ---
+// Assigns the vPosition attribute with the VBO
 void assignAttrib(){
    int i = 0;
 
@@ -420,14 +446,66 @@ void assignAttrib(){
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
 }
-//----------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------
+//--- cmpf ---
+// Compares to see if two floats are different (if close) based on epsilon
 bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
    return fabs(a - b) < epsilon;
 }
 
 //----------------------------------------------------------------------------
+//--- initFields ---
+// Initializes all the fields needed for calculations or to display
+void initFields(){
+      std::cout << "-> init fields started" << "\n";
 
+   Velocity = createPair(fieldWidth, fieldHeight);
+      std::cout << "-> init Velocity complete"<< "\n";
+   clearField(Velocity.foo, 0.5);
+
+   Pressure = createPair(fieldWidth, fieldHeight);
+      std::cout << "-> init Pressure complete"<< "\n";
+      clearField(Pressure.foo, 0.2);
+
+   Ink = createPair(fieldWidth, fieldHeight);
+      std::cout << "-> init Ink complete"<< "\n";
+      clearField(Ink.foo, 0.0);
+
+   Divergence = createField(fieldWidth, fieldHeight);
+      std::cout << "-> init Divergence complete"<< "\n";
+
+   initShaders(shaders);
+      std::cout << "-> init shaders complete"<< "\n";
+}
+
+//----------------------------------------------------------------------------
+//--- unbind ---
+// Unbinds current textures and framebuffer
+void unbind() {
+   // After each call to a shader program, 
+   // We should remove the shader specific bindings for textures to avoid possible errors.
+   // We do this by binding them to "0";
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex2
+
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex1
+
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex0
+
+   glBindFramebuffer(GL_FRAMEBUFFER,0); // unbind framebuffer
+}
+
+//----------------------------------------------------------------------------
+// Runtime function
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+//--- runtime ---
+// Goes through all the steps in the Navier Stokes equation to get the new velocity (u)
+// field and update our ink field.
 void runtime(){
    // GPU Gems 1 Chapter 38 pseudocode:
    //
@@ -477,50 +555,20 @@ void runtime(){
    swapField(&Velocity);
 }
 
-void initFields(){
-      std::cout << "-> init fields started" << "\n";
+//----------------------------------------------------------------------------
+// Slab Operations
+//----------------------------------------------------------------------------
 
-   Velocity = createPair(fieldWidth, fieldHeight);
-      std::cout << "-> init Velocity complete"<< "\n";
-   clearField(Velocity.foo, 0.5);
-
-   Pressure = createPair(fieldWidth, fieldHeight);
-      std::cout << "-> init Pressure complete"<< "\n";
-      clearField(Pressure.foo, 0.2);
-
-   Ink = createPair(fieldWidth, fieldHeight);
-      std::cout << "-> init Ink complete"<< "\n";
-      clearField(Ink.foo, 0.0);
-
-   Divergence = createField(fieldWidth, fieldHeight);
-      std::cout << "-> init Divergence complete"<< "\n";
-
-   initShaders(shaders);
-      std::cout << "-> init shaders complete"<< "\n";
-}
-
-void unbind() {
-   // After each call to a shader program, 
-   // We should remove the shader specific bindings for textures to avoid possible errors.
-   // We do this by binding them to "0";
-   glActiveTexture(GL_TEXTURE2);
-   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex2
-
-   glActiveTexture(GL_TEXTURE1);
-   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex1
-
-   glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, 0); // unbind tex0
-
-   glBindFramebuffer(GL_FRAMEBUFFER,0); // unbind framebuffer
-}
-
+//----------------------------------------------------------------------------
+//--- addedForce ---
+// Adds user input (clicking and dragging) and turns into external forces on velocity
 void addedForce(Field velocity, Field destination) {
-
+   // Get the appropriate shader and use it
    GLuint shaderHandle = shaders->addedForce;
    
    glUseProgram(shaderHandle);
 
+   // Get references to uniforms
    GLuint newForce = glGetUniformLocation(shaderHandle, "NewForce");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
    GLuint impulseRadius = glGetUniformLocation(shaderHandle, "ImpulseRadius");
@@ -529,6 +577,7 @@ void addedForce(Field velocity, Field destination) {
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
+   // Set uniform variables
    glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x)/ VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
@@ -537,23 +586,30 @@ void addedForce(Field velocity, Field destination) {
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
+   // Bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
+   // Set texture 0 to velocity field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocity.texture);
 
+   // Use the shaders to draw on a quad
    glBindVertexArray(VAO);
    glBindBuffer(GL_ARRAY_BUFFER, buffer);
    glDrawArrays(GL_TRIANGLES, 0, 6);;
    unbind();
 }
 
+//----------------------------------------------------------------------------
+//--- advect ---
+// Advects (aka moves based on velocity) the field given based on velocity and time step
 void advect(Field velocity, Field position, Field destination, float dissipationVal, bool advectingInk) {
-   
+   // Get the appropriate shader and use it
    GLuint shaderHandle = shaders->advect;
 
    glUseProgram(shaderHandle);
 
+   // Get references to uniforms
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
    GLuint fieldSize = glGetUniformLocation(shaderHandle, "FieldSize");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
@@ -561,10 +617,10 @@ void advect(Field velocity, Field position, Field destination, float dissipation
    GLuint isInk = glGetUniformLocation(shaderHandle, "IsInk");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
-
    GLuint posTex = glGetUniformLocation(shaderHandle, "posTex");
 
-   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight)); // rdx is 1/dx and dy
+   // Set uniform variables
+   glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight)); // rdx is 1/dx and dy?
    glUniform2f(fieldSize, fieldWidth,fieldHeight);
    glUniform1f(timeStep, dt);
    glUniform1f(dissipation, dissipationVal);
@@ -573,25 +629,28 @@ void advect(Field velocity, Field position, Field destination, float dissipation
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
    glUniform1i(posTex, 1); // texture 1 is a sampler2D in GLSL shader
-   // bind framebuffer to the destination field
+   // Bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
 
-   // set texture 0 to be the velocity field
+   // Set texture 0 to be the velocity field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocity.texture);
 
-   //set texture one to be the position texture
+   // Set texture one to be the position texture
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, position.texture);
 
-   //use the shaders
+   // Use the shaders to draw on a quad
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   //unbind everything
+   // Unbind everything
    unbind();
 }
 
+//----------------------------------------------------------------------------
+//--- jacobi ---
+// Jacobi is used to solve poisson pressure and for viscous diffusion in Navier Stokes Equaiton
 void jacobi(Field xField, Field bField, Field destination, bool isVelo, float alphaParameter, float betaParameter){
-   /* This gets called a number of times in a loop. 
+   /* This gets called a number of times in a loop. (for better accuracy)
       Used for poisson pressure and for viscous diffusion.
 
    For pressure, alpha = -(dx^2)
@@ -605,18 +664,20 @@ void jacobi(Field xField, Field bField, Field destination, bool isVelo, float al
                 d = velocity
    */
 
+   // Get the appropriate shader and use it
    GLuint shaderHandle = shaders->jacobi;
 
    glUseProgram(shaderHandle);
 
+   // Get references to uniforms
    GLuint alpha = glGetUniformLocation(shaderHandle, "alpha");
    GLuint rBeta = glGetUniformLocation(shaderHandle, "rBeta");
    GLuint isVeloPtr = glGetUniformLocation(shaderHandle, "Velocity");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
-
    GLuint b = glGetUniformLocation(shaderHandle, "b");
 
+   // Set uniform variables
    glUniform1f(alpha, alphaParameter);
    glUniform1f(rBeta, 1.0f/betaParameter);
    glUniform1f(isVeloPtr, isVelo);
@@ -624,35 +685,39 @@ void jacobi(Field xField, Field bField, Field destination, bool isVelo, float al
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
    glUniform1i(b, 1);
 
-   // bind frame buffer to the destination field
+   // Bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
-   // set texture 0 to be the x field
+   // Set texture 0 to be the x field (pressure or velocity)
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, xField.texture);
 
-   // set texture one to be the b texture
+   // Set texture one to be the b texture
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, bField.texture);
 
-   // use the shaders
+   // Use the shaders to draw on a quad
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   // unbind everything
+   // Unbind everything
    unbind();
 }
 
-
+//----------------------------------------------------------------------------
+//--- subtractGradient ---
+// Subtracts the pressure gradient from our velocity field to get non-zero diverence velocity field
 void subtractGradient(Field velocityField, Field pressureField, Field destination){
-
+   // Get the appropriate shader and use it
    GLuint shaderHandle = shaders->subtractGradient;
 
    glUseProgram(shaderHandle);
 
+   // Get references to uniforms
    GLuint pressure=  glGetUniformLocation(shaderHandle, "pressure");
    GLuint gradScale=  glGetUniformLocation(shaderHandle, "gradScale");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
+   // Set uniform variables
    //glUniform1f(gradScale, 0.5/(fieldWidth));
    // Below gives more appropriate results after fiddling
    glUniform1f(gradScale, 0.5/(float)cellSize);
@@ -660,10 +725,10 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
-    //bindframe buffer to the destination field
+   // Bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
-   //set texture 0 to be the velocity field
+   // Set texture 0 to be the velocity field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocityField.texture);
 
@@ -671,22 +736,29 @@ void subtractGradient(Field velocityField, Field pressureField, Field destinatio
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D, pressureField.texture);
 
-   //use the shaders
+   // Use the shaders to draw on a quad
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   //unbind everything
+   // Unbind everything
    unbind();
 
 }
 
+//----------------------------------------------------------------------------
+//--- divergence ---
+// Finds the new divergence field based on the velocity field
 void divergence(Field velocityField, Field destination){
+   // Get the appropriate shader and use it
    GLuint shaderHandle = shaders->divergence;
+
    glUseProgram(shaderHandle);
 
+   // Get references to uniforms
    GLuint halfrdx = glGetUniformLocation(shaderHandle, "Halfrdx");
    GLuint velocityScale = glGetUniformLocation(shaderHandle, "VelocityScale");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
+   // Set uniform variables
    // glUniform1f(halfrdx, 0.5f/(float)fieldWidth); 
    // Textbook wording makes it sound like above but it's only 0.00078125 at width of 640
    // 0.5/cellSize gives a more reasonable value
@@ -695,24 +767,29 @@ void divergence(Field velocityField, Field destination){
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
-   // bind frame buffer to the destination field
+   // Bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
-   // set texture 0 to be the velocity field
+   // Set texture 0 to be the velocity field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, velocityField.texture);
    
-   // use the shaders
+   // Use the shaders to draw on a quad
    glDrawArrays(GL_TRIANGLES, 0, 6);
-   // unbind everything
+   // Unbind everything
    unbind();
 }
 
+//----------------------------------------------------------------------------
+//--- addedInk ---
+// Adds ink onto the ink field based on the ink parameters
 void addedInk(Field canvas, Field destination) {
+   // Get the appropriate shader and use it
    GLuint shaderHandle = shaders->addedInk;
    
    glUseProgram(shaderHandle);
 
+   // Get references to uniforms
    GLuint newInk = glGetUniformLocation(shaderHandle, "NewInk");
    GLuint inkRadiusPtr = glGetUniformLocation(shaderHandle, "InkRadius");
    GLuint inkStrengthPtr = glGetUniformLocation(shaderHandle, "InkStrength");
@@ -721,6 +798,7 @@ void addedInk(Field canvas, Field destination) {
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
+   // Set uniform variables
    glUniform3f(newInk, inkColors[selectedColor].r, inkColors[selectedColor].g, inkColors[selectedColor].b);
    glUniform1f(inkRadiusPtr, inkRadius);
    glUniform1f(inkStrengthPtr, inkStrength);
@@ -729,13 +807,17 @@ void addedInk(Field canvas, Field destination) {
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 
+   // Bind framebuffer to the destination field
    glBindFramebuffer(GL_FRAMEBUFFER, destination.fbo);
    
+   // Set texture 0 to be the ink field
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, canvas.texture);
 
+   // Use the shaders to draw on a quad
    glBindVertexArray(VAO);
    glBindBuffer(GL_ARRAY_BUFFER, buffer);
    glDrawArrays(GL_TRIANGLES, 0, 6);
+   // Unbind everything
    unbind();
 }
