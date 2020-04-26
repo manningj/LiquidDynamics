@@ -6,40 +6,40 @@
 // FILE             : liquid2d.cpp
 //
 // REMARKS	: This program shows basic fluid dynamics by utitizing a solution to the
-//         Navier Stokes Equations as described in GPU Gems 1, Chapter 38. Our implementation
-//         has all of the main parts of the equation implemented, but pressure does
-//         behave as expected.
+//            Navier Stokes Equations as described in GPU Gems 1, Chapter 38. Our implementation
+//            has all of the main parts of the equation implemented, but pressure does
+//            behave as expected.
 //
 // CONTROLS	: Click and drag to add force and color/ink to the fluid in the window
-//         Q or escape key to exit program
-//         0 to 9 keys will select the current color to add to the fluid (see color reference below)
-//         Space bar to swap between viewing velocity field (u) or color/ink field
-//			  A key to reset the program to initial state
-//			  W key to increase viscosity
-//			  S key to decrease viscosity
-//			  E key to increase ink color strength
-//			  D key to decrease ink color strength
-//			  R key to increase ink color dissipation
-//			  F key to decrease ink color dissipation
-//			  T key to increase ink color radius
-//			  G key to decrease ink color radius
-//			  Y key to increase velocity radius (value is squared radius)
-//			  H key to increase velocity radius (value is squared radius)
-//			  Z key to clear velocity field
-//			  X key to clear ink color field
-//			  C key to clear currently displayed field
+//            Q or escape key to exit program
+//            0 to 9 keys will select the current color to add to the fluid (see color reference below)
+//            Space bar to swap between viewing velocity field (u) or color/ink field
+//            A key to reset the program to initial state
+//            W key to increase viscosity
+//            S key to decrease viscosity
+//            E key to increase ink color strength
+//            D key to decrease ink color strength
+//            R key to increase ink color dissipation
+//            F key to decrease ink color dissipation
+//            T key to increase ink color radius
+//            G key to decrease ink color radius
+//            Y key to increase velocity radius (value is squared radius)
+//            H key to increase velocity radius (value is squared radius)
+//            Z key to clear velocity field
+//            X key to clear ink color field
+//            C key to clear currently displayed field
 //			  
 // COLOR-KEY REFERENCE :
-//         0 - White
-//         1 - Red
-//         2 - Orange
-//         3 - Yellow
-//         4 - Green
-//         5 - Light Blue
-//         6 - Blue
-//         7 - Purple
-//         8 - Pink
-//         8 - Beige
+//            0 - White
+//            1 - Red
+//            2 - Orange
+//            3 - Yellow
+//            4 - Green
+//            5 - Light Blue
+//            6 - Blue
+//            7 - Purple
+//            8 - Pink
+//            9 - Beige
 //
 //----------------------------------------------------------------------------
 
@@ -152,6 +152,7 @@ void init()
 
    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
    printf("Initialization Complete\n");
+   printInstructions();
 }
 
 //----------------------------------------------------------------------------
@@ -237,11 +238,11 @@ void keyboard(unsigned char key, int x, int y)
       break;
    case 'w':
       viscosity += 0.1;
-      printf("Viscosity: %f\n", viscosity);
+      printf("Viscosity Coefficient: %f\n", viscosity);
       break;
    case 's':
       viscosity = glm::max(0.1, viscosity - 0.1);
-      printf("Viscosity: %f\n", viscosity);
+      printf("Viscosity Coefficient: %f\n", viscosity);
       break;
    case 'e':
       inkStrength += 0.05;
@@ -496,6 +497,23 @@ void unbind() {
    glBindTexture(GL_TEXTURE_2D, 0); // unbind tex0
 
    glBindFramebuffer(GL_FRAMEBUFFER,0); // unbind framebuffer
+}
+
+//----------------------------------------------------------------------------
+//--- printInstructions ---
+// Prints out controls for the program
+void printInstructions() {
+   printf("Welcome to our 2D fluid dynamics program!\n");
+   printf("Click and move to add ink and external forces.\n");
+   printf("Press number keys to change ink color.\n");
+   printf("Press 'w'/'s' keys to alter the fluid viscosity coefficient.\n");
+   printf("Press 'e'/'d' keys to alter the ink strength.\n");
+   printf("Press 'r'/'f' keys to alter the ink dissipation.\n");
+   printf("Press 't'/'g' keys to alter the ink radius.\n");
+   printf("Press 'y'/'h' keys to alter the velocity radius.\n");
+   printf("Press 'z' to clear velocity, x to clear ink field.\n");
+   printf("Press 'c' to clear field currently displayed.\n");
+   printf("Press 'a' key to reset to initial settings and clear.\n");
 }
 
 //----------------------------------------------------------------------------

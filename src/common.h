@@ -98,6 +98,7 @@ void unbind();
 void runtime();
 void assignAttrib();
 void initFields();
+void printInstructions();
 // SLAB OPERATIONS
 void addedForce(Field velocity, Field destination);
 void advect(Field velocity, Field pressure, Field destination, float dissipationVal, bool advectingInk);

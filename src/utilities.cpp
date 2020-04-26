@@ -6,7 +6,7 @@
 // FILE             : utilities.cpp
 //
 // REMARKS	: This file has functions for creating our data structures and other 
-//			utility functions. 
+//            utility functions. 
 //
 //----------------------------------------------------------------------------
 
