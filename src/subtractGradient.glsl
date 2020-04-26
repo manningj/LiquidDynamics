@@ -53,6 +53,7 @@ void main(){
     }
 }
 
+// Checks if boundary based on passed in interior range
 bool isBoundary(float x, float y) {
     if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
         return true;

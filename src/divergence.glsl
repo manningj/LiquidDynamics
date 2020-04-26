@@ -3,7 +3,7 @@
 out vec4 fragDivergence;
 
 uniform sampler2D Velocity;
-uniform float Halfrdx; // half of the reciprocal of dx
+uniform float Halfrdx; // Half of the reciprocal of dx
 uniform float VelocityScale; // To undo scaling of velocity in C++ code
 // To find if we are interior or are a boundary
 uniform vec2 InteriorRangeMin;
@@ -25,10 +25,10 @@ void main(){
 
         // Calculate inverse velocity in case one of the neighbors is a boundary
         vec4 center = texelFetch(Velocity, fragCoord, 0);
-        vec4 centerV = (center * 2.0f) -1.0f; // convert to (-1, 1)
+        vec4 centerV = (center * 2.0f) -1.0f; // Convert to (-1, 1)
 
-        centerV = (centerV * -1.0); // invert if velocity 
-        centerV = (centerV + 1.0f)/2.0f; // convert back to texture range (0,1)
+        centerV = (centerV * -1.0); // Invert if velocity 
+        centerV = (centerV + 1.0f)/2.0f; // Convert back to texture range (0,1)
         
         center = centerV * VelocityScale;
 
@@ -46,6 +46,7 @@ void main(){
             vL = vec2(center.xy); 
         }
     
+        // Do divergence calculations and set to fragment's red color!
         float red = Halfrdx * ((vR.x - vL.x) + (vT.y - vB.y));
         fragDivergence = vec4(red,0.0, 0.0, 1.0);
     } else {
@@ -53,7 +54,7 @@ void main(){
     }
 }
 
-
+// Checks if boundary based on passed in interior range
 bool isBoundary(float x, float y) {
     if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
         return true;

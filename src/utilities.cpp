@@ -1,5 +1,20 @@
+//----------------------------------------------------------------------------
+// NAMES            : Mark Robitaille, John Manning
+// COURSE           : COMP 4490
+// INSTRUCTOR       : John Braico
+// PROJECT          : Fluid Dynamics Demonstration
+// FILE             : utilities.cpp
+//
+// REMARKS	: This file has functions for creating our data structures and other 
+//			utility functions. 
+//
+//----------------------------------------------------------------------------
+
 #include "common.h"
 
+//----------------------------------------------------------------------------
+//--- initShaders ---
+// Initializes shaders and loads them into the shaders struct passed in as a parameter
 void initShaders(Shaders* shaders) {
 	std::cout << "->-> init shaders started\n";
 	shaders->drawTexture = InitShader("vshader.glsl", "drawTexture.glsl");
@@ -24,6 +39,10 @@ void initShaders(Shaders* shaders) {
 		std::cout << "->-> init addedInk complete\n";
 }
 
+//----------------------------------------------------------------------------
+//--- createField ---
+// Creates a field given a provided width and height.
+// Creates a texture and a framebuffer object, then attaches the texture to the framebuffer.
 Field createField(GLint width, GLint height) {
 	// Put texture attachment into a frame buffer, so we can easily use the data between passes of the fragment shader.
 	Field newField = { 0, 0 }; // Set in case of errors during creation
@@ -59,7 +78,7 @@ Field createField(GLint width, GLint height) {
 		newField = { fbo, texture };
 	}
 	else {
-		printf("UH OH!\n");
+		printf("Field initialization error!\n");
 	}
 
 	glClearColor(0, 0, 0, 0); 
@@ -68,6 +87,9 @@ Field createField(GLint width, GLint height) {
 	return newField;
 }
 
+//----------------------------------------------------------------------------
+//--- createPair ---
+// Creates a Pair struct and sets both of the Fields stored within.
 Pair createPair(int width, int height) {
 	// Create 2 fields, foo is the read field and bar is write field
 	Pair newPair;
@@ -76,13 +98,19 @@ Pair createPair(int width, int height) {
 	return newPair;
 }
 
+//----------------------------------------------------------------------------
+//--- clearField ---
+// Clear's a field by clearing the frame buffer's color.
 void clearField(Field field, float clearColor) {
 	// Clear the given field with a set color
 	glBindFramebuffer(GL_FRAMEBUFFER, field.fbo);
-	glClearColor(clearColor, clearColor, clearColor, clearColor);
+	glClearColor(clearColor, clearColor, clearColor, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
+//----------------------------------------------------------------------------
+//--- swapField ---
+// Swaps a Pair's foo and bar Fields
 void swapField(Pair *fieldPair) {
 	// Swap the fields foo and bar around.
 	Field temp = fieldPair->foo;

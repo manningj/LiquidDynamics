@@ -45,8 +45,6 @@
 
 extern GLuint InitShader(const char* vShaderFile, const char* fShaderFile);
 
-// Implement the following...
-
 extern const char *WINDOW_TITLE;
 extern const double FRAME_RATE_MS;
 
@@ -58,7 +56,6 @@ extern void mouse(int button, int state, int x, int y);
 extern void mouseDrag(int x, int y);
 extern void reshape(int width, int height);
 
-
 typedef glm::vec4 color4; // name vec4 as color4 for clarity
 typedef glm::vec4 point4; // name vec4 as point4 for clarity
 
@@ -68,6 +65,7 @@ typedef glm::vec3 point3; // name vec4 as point4 for clarity
 typedef glm::vec2 color2; // name vec4 as color4 for clarity
 typedef glm::vec2 point2; // name vec4 as point4 for clarity
 
+// Data structures we'll use to store fields and our shaders
 typedef struct field_struct {
     GLuint fbo;
     GLuint texture;

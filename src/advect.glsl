@@ -2,19 +2,19 @@
 
 out vec4 newX; //the advected position
 
-uniform vec2 Scale; // {1/field width, 1/field height}
+uniform vec2 Scale; // 1/field width, 1/field height
 uniform vec2 FieldSize; // fieldWidth, fieldHeight
-uniform float TimeStep; //dt
-uniform float Dissipation; //diffusion value
+uniform float TimeStep; // dt
+uniform float Dissipation; // diffusion value
 uniform bool IsInk;
 
-uniform sampler2D veloTex; //velocity texture
+uniform sampler2D veloTex; // velocity texture
 uniform sampler2D posTex; // position texture.
 // To find if we are interior or are a boundary
 uniform vec2 InteriorRangeMin;
 uniform vec2 InteriorRangeMax;
 
-// formula is q(x,t + dt) = q(x - u(x,t)dt,t)
+// Formula is q(x,t + dt) = q(x - u(x,t)dt,t)
 
 /*
 To sample the color of a texture we use GLSL's built-in texture function
@@ -26,7 +26,7 @@ using the texture parameters we set earlier.
 */
 void main() 
 {
-  // check if we're a boundary, if so, just get to zero velocity/ink
+  // Check if we're a boundary, if so, just get to zero velocity/ink
   if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
     if (IsInk) {
       newX = vec4(0.0,0.0,0.0, 1);
@@ -36,15 +36,18 @@ void main()
   } else {
     vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
 
-    //this gets the samples the value of velo tex at the window coordinates of the fragment.
+    // This gets the samples the value of velo tex at the window coordinates of the fragment.
     // u = the velocity of this fragment(or cell)
     vec2 u = ((texture(veloTex, Scale * fragCoord).xy) - 0.5) * FieldSize; 
-    //go to previous position.
-    
-    vec2 pos = (fragCoord - TimeStep * u )* Scale;
-    //this gets the new advectedd pos.
 
+    // Go to previous position.
+    vec2 pos = (fragCoord - TimeStep * u )* Scale;
+
+    // this gets the new advected pos.
     vec3 newU = texture(posTex, pos).xyz;
+    
+    // Apply possible dissipation 
+    // (Note: Velocity should always be dissipation at 1.0f as diffusion should dissipate!)
     newX = vec4(Dissipation *newU.xyz, 1.0);
   }
 }

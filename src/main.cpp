@@ -125,7 +125,7 @@ main( int argc, char **argv )
    glutDisplayFunc( display );
    glutKeyboardFunc( keyboard );
    glutMouseFunc( mouse );
-   glutMotionFunc(mouseDrag);
+   glutMotionFunc( mouseDrag );
    glutReshapeFunc( reshape );
    glutTimerFunc( FRAME_RATE_MS, timer, 0 );
    

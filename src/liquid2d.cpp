@@ -1,8 +1,9 @@
 //----------------------------------------------------------------------------
-// NAMES		       : Mark Robitaille, John Manning
-// COURSE		    : COMP 4490
-// INSTRUCTOR	    : John Braico
-// PROJECT         : Fluid Dynamics Demonstration
+// NAMES            : Mark Robitaille, John Manning
+// COURSE           : COMP 4490
+// INSTRUCTOR       : John Braico
+// PROJECT          : Fluid Dynamics Demonstration
+// FILE             : liquid2d.cpp
 //
 // REMARKS	: This program shows basic fluid dynamics by utitizing a solution to the
 //         Navier Stokes Equations as described in GPU Gems 1, Chapter 38. Our implementation
@@ -96,7 +97,7 @@ color3 inkColors[10] = {
    color3(1.0,0.6,0.8), // Pink
    color3(0.8,0.7,0.6), // Beige
 };
-float inkStrength = 0.15;
+float inkStrength = 0.25;
 int selectedColor = 0;
 
 // Velocity settings when adding force
@@ -227,7 +228,7 @@ void keyboard(unsigned char key, int x, int y)
       showVelocity = false;
       viscosity = 0.7f;
       inkDis = inkDissipation;
-      inkStrength = 0.15f;
+      inkStrength = 0.25f;
       inkRadius = 25.0f;
       forceRadius = 500.0f;
       clearField(Velocity.foo, 0.5);
