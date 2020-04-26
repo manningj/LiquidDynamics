@@ -42,14 +42,15 @@ void main(){
              pL = pC; 
         }
 
+
         // Get the velocity for the fragment, which we'll alter by the gradient
         vec2 prevVelo = texelFetch(velocity, fragCoord, 0).xy;
         // Previous velocity minus the gradient
         vec2 newVelo = prevVelo - vec2(pL - pR, pT - pB) * gradScale;
         // Set the new velocity
-        uNew = vec4(newVelo.x,newVelo.y, 0.5, 1.0);
+        uNew = vec4(newVelo.x,newVelo.y, 0.0, 1.0);
     } else { // Boundary, set zero velocity
-        uNew = vec4(0.5,0.5,0.5,1.0);
+        uNew = vec4(0.0,0.0,0.0,1.0);
     }
 }
 

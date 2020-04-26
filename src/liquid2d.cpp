@@ -75,7 +75,7 @@ GLuint buffer;
 Shaders temp = {0,0,0,0,0,0,0};
 Shaders* shaders = &temp;
 
-float viscosity = 0.7f;
+float viscosity = 100.0f;
 float dt = 1.0f/60.0f;
 Pair Velocity, Pressure, Ink;
 Field Divergence;
@@ -101,7 +101,7 @@ float inkStrength = 0.25;
 int selectedColor = 0;
 
 // Velocity settings when adding force
-const float VELOCITY_SCALE = 10.0f; // Lower number increases intensity of force
+const float VELOCITY_SCALE = 30.0f; // Lower number increases intensity of force
 float veloDis = 1.0f;
 float forceRadius = 500.0f; // Affects radius of sqrt this value
 
@@ -176,7 +176,11 @@ void display(void)
 
    // Set uniforms
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
+   GLuint isVelo = glGetUniformLocation(shaderHandle, "Velocity");
+   GLuint velocityScale = glGetUniformLocation(shaderHandle, "VelocityScale");
    glUniform2f(scale, 1.0f / (windowWidth), 1.0f / (windowHeight));
+   glUniform1i(isVelo, showVelocity);
+   glUniform1f(velocityScale, VELOCITY_SCALE);
 
    // Bind selected texture and draw
    glActiveTexture(GL_TEXTURE0);
@@ -184,7 +188,8 @@ void display(void)
    if (showVelocity) {
       glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
    } else {
-      glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
+      glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
+      // glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
    }
    
    // Draw a quad on whole screen to display texture
@@ -232,7 +237,7 @@ void keyboard(unsigned char key, int x, int y)
       inkStrength = 0.25f;
       inkRadius = 25.0f;
       forceRadius = 500.0f;
-      clearField(Velocity.foo, 0.5);
+      clearField(Velocity.foo, 0.0);
       clearField(Ink.foo, 0.0);
       printf("Settings reset.\n");
       break;
@@ -277,7 +282,7 @@ void keyboard(unsigned char key, int x, int y)
       printf("Velocity Radius (note: essentially squared radius): %f\n", forceRadius);
       break;
    case 'z':
-      clearField(Velocity.foo, 0.5);
+      clearField(Velocity.foo, 0.0);
       printf("Cleared velocity.\n");
       break;
    case 'x':
@@ -286,7 +291,7 @@ void keyboard(unsigned char key, int x, int y)
       break;
    case 'c':
       if (showVelocity) {
-         clearField(Velocity.foo, 0.5);
+         clearField(Velocity.foo, 0.0);
          printf("Cleared velocity.\n");
       } else {
          clearField(Ink.foo, 0.0);
@@ -463,7 +468,7 @@ void initFields(){
 
    Velocity = createPair(fieldWidth, fieldHeight);
       std::cout << "-> init Velocity complete"<< "\n";
-   clearField(Velocity.foo, 0.5);
+   clearField(Velocity.foo, 0.0);
 
    Pressure = createPair(fieldWidth, fieldHeight);
       std::cout << "-> init Pressure complete"<< "\n";
@@ -547,7 +552,7 @@ void runtime(){
    advect(Velocity.foo, Velocity.foo, Velocity.bar, veloDis, false);
    swapField(&Velocity);
 
-   // Advent the ink based on the velocity
+   // // Advent the ink based on the velocity
    advect(Velocity.foo, Ink.foo, Ink.bar, inkDis, true);
    swapField(&Ink);
 
@@ -563,14 +568,14 @@ void runtime(){
    clearField(Pressure.foo, 0.0);
 
    // Apply divergence on pressure field
-   for(int i = 0; i < jacobiIterations/2; ++i){
+   for(int i = 0; i < jacobiIterations; ++i){
       jacobi(Pressure.foo, Divergence, Pressure.bar, false, pressureAlpha,pressureBeta);
       swapField(&Pressure);
    }
 
-   // Subtract the gradient from velocity to get final velocity field
-   subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
-   swapField(&Velocity);
+   // // Subtract the gradient from velocity to get final velocity field
+   // subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
+   // swapField(&Velocity);
 }
 
 //----------------------------------------------------------------------------
@@ -596,7 +601,7 @@ void addedForce(Field velocity, Field destination) {
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    // Set uniform variables
-   glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x)/ VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
+   glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x), ((float)verticesLine[1].y - (float)verticesLine[0].y));
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);

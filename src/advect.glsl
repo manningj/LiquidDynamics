@@ -31,19 +31,19 @@ void main()
     if (IsInk) {
       newX = vec4(0.0,0.0,0.0, 1);
     } else {
-      newX = vec4(0.5,0.5,0.5, 1);
+      newX = vec4(0.0,0.0,0.0, 1);
     }
   } else {
     vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
 
     // This gets the samples the value of velo tex at the window coordinates of the fragment.
     // u = the velocity of this fragment(or cell)
-    vec2 u = ((texture(veloTex, Scale * fragCoord).xy) - 0.5) * FieldSize; 
+    vec2 u = (texture(veloTex, Scale * fragCoord).xy) * 10.0f;; 
 
     // Go to previous position.
-    vec2 pos = (fragCoord - TimeStep * u )* Scale;
+    vec2 pos = (fragCoord - TimeStep * u ) * Scale;
 
-    // this gets the new advected pos.
+    // This gets the new advected pos.
     vec3 newU = texture(posTex, pos).xyz;
     
     // Apply possible dissipation 

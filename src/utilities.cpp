@@ -68,7 +68,7 @@ Field createField(GLint width, GLint height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Generate texture to width & height
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fieldWidth, fieldHeight, 0, GL_RGB, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, fieldWidth, fieldHeight, 0, GL_RGB, GL_FLOAT, 0);
 
 	// Assign texture to frame buffer (as a color attachment)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);

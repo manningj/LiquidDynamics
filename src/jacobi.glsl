@@ -42,40 +42,39 @@ void main(){
         // If any of the surrounding cells are a boundary, we want to use the center for velocity/pressure.
         // Negative center velocity for velocity, positive center pressure for pressure.
         if(Velocity){
-            vec4 centerV = (center * 2.0f) -1.0f; // convert to (-1, 1)
-
-            centerV = (centerV * -1.0); // invert if velocity 
-            centerV = (centerV + 1.0f)/2.0f; // convert back to texture range (0,1)
-            
-            center = centerV;
+            vec4 centerV = vec4(-center.rgb, 1.0);  // Set to -u
         }
 
         // Check if boundary, if so set to center (or inverse center if velocity)
-        if(isBoundary(fragCoord.x, fragCoord.y+1.0)) {
+        if(isBoundary(fragCoord.x, fragCoord.y + 1.0)) {
             top = center; 
         }
-        if(isBoundary(fragCoord.x, fragCoord.y-1.0)) { 
+        if(isBoundary(fragCoord.x, fragCoord.y - 1.0)) { 
             bot = center; }
-        if(isBoundary(fragCoord.x+1.0, fragCoord.y)) {
+        if(isBoundary(fragCoord.x + 1.0, fragCoord.y)) {
             right = center; 
         }
-        if(isBoundary(fragCoord.x-1.0, fragCoord.y)) {
+        if(isBoundary(fragCoord.x - 1.0, fragCoord.y)) {
             left = center; 
         }
 
         // Get center of b sample
         vec4 bC = texelFetch(b, fragCoord, 0);
-        if (Velocity) {
+        // if (Velocity) {
             xNew = ((top + bot + right + left + (alpha * bC)) * rBeta );
-        } else {
-            // Just use x coordinates with pressure
-            // This is separate just to make sure no other fields are altered
-            float outX = (top.x + bot.x + right.x  + left.x + (alpha * bC.x) * rBeta);
-            xNew = vec4(outX, 0.0, 0.0, 1.0);
-        }
+        // } else {
+        //     // Just use x coordinates with pressure
+        //     // This is separate just to make sure no other fields are altered
+        //     float outX = (top.x + bot.x + right.x  + left.x + (alpha * bC.x) * rBeta);
+            
+        //     xNew = vec4(outX, 0.0, 0.0, 1.0);
+        //     // if (outX>1 || xNew <-1) {
+        //     //     xNew = vec4(1.0, 1.0, 1.0, 1.0);
+        //     // }
+        // }
     } else { // Boundary, set to zero velocity/pressure
         if(Velocity){
-            xNew = vec4(0.5,0.5,0.5,1.0);
+            xNew = vec4(0.0,0.0,0.,1.0);
         } else {
             xNew = vec4(0.0,0.0,0.0,1.0);
         }
