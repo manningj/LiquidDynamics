@@ -588,7 +588,7 @@ void addedForce(Field velocity, Field destination) {
 
    // Get references to uniforms
    GLuint newForce = glGetUniformLocation(shaderHandle, "NewForce");
-   GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
+   GLuint dTime = glGetUniformLocation(shaderHandle, "dt");
    GLuint impulseRadius = glGetUniformLocation(shaderHandle, "ImpulseRadius");
    GLuint impulsePosition = glGetUniformLocation(shaderHandle, "ImpulsePosition");
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
@@ -597,7 +597,7 @@ void addedForce(Field velocity, Field destination) {
 
    // Set uniform variables
    glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x)/ VELOCITY_SCALE, ((float)verticesLine[1].y - (float)verticesLine[0].y) / VELOCITY_SCALE);
-   glUniform1f(timeStep, dt);
+   glUniform1f(dTime, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight));
@@ -630,7 +630,7 @@ void advect(Field velocity, Field position, Field destination, float dissipation
    // Get references to uniforms
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
    GLuint fieldSize = glGetUniformLocation(shaderHandle, "FieldSize");
-   GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
+   GLuint dTime = glGetUniformLocation(shaderHandle, "dt");
    GLuint dissipation = glGetUniformLocation(shaderHandle, "Dissipation");
    GLuint isInk = glGetUniformLocation(shaderHandle, "IsInk");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
@@ -640,7 +640,7 @@ void advect(Field velocity, Field position, Field destination, float dissipation
    // Set uniform variables
    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight)); // rdx is 1/dx and dy?
    glUniform2f(fieldSize, fieldWidth,fieldHeight);
-   glUniform1f(timeStep, dt);
+   glUniform1f(dTime, dt);
    glUniform1f(dissipation, dissipationVal);
    glUniform1i(isInk, advectingInk);
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);

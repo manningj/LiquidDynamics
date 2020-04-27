@@ -4,7 +4,7 @@ out vec4 newX; //the advected position
 
 uniform vec2 Scale; // 1/field width, 1/field height
 uniform vec2 FieldSize; // fieldWidth, fieldHeight
-uniform float TimeStep; // dt
+uniform float dt; // dt
 uniform float Dissipation; // diffusion value
 uniform bool IsInk;
 
@@ -41,7 +41,7 @@ void main()
     vec2 u = ((texture(veloTex, Scale * fragCoord).xy) - 0.5) * FieldSize; 
 
     // Go to previous position.
-    vec2 pos = (fragCoord - TimeStep * u )* Scale;
+    vec2 pos = (fragCoord - dt * u )* Scale;
 
     // this gets the new advected pos.
     vec3 newU = texture(posTex, pos).xyz;
