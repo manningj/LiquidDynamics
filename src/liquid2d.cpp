@@ -187,9 +187,10 @@ void display(void)
 
    if (showVelocity) {
       glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
+      // glBindTexture(GL_TEXTURE_2D, Divergence.texture);
    } else {
-      glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
-      // glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
+      // glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
+      glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
    }
    
    // Draw a quad on whole screen to display texture
@@ -574,8 +575,8 @@ void runtime(){
    }
 
    // // Subtract the gradient from velocity to get final velocity field
-   // subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
-   // swapField(&Velocity);
+   subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
+   swapField(&Velocity);
 }
 
 //----------------------------------------------------------------------------
