@@ -4,7 +4,7 @@ out vec4 newX; //the advected position
 
 uniform vec2 Scale; // 1/field width, 1/field height
 uniform float VelocityScale;
-uniform float TimeStep; // dt
+uniform float dt; // dt
 uniform float Dissipation; // diffusion value
 
 uniform sampler2D veloTex; // velocity texture
@@ -36,14 +36,14 @@ void main()
     vec2 u = (texture(veloTex, Scale * fragCoord).xy) * VelocityScale; 
 
     // Go to previous position.
-    vec2 pos = (fragCoord - TimeStep * u ) * Scale;
+    vec2 pos = (fragCoord - dt * u ) * Scale;
 
     // This gets the new advected pos.
     vec3 newU = texture(posTex, pos).xyz;
     
     // Apply possible dissipation 
     // (Note: Velocity should always be dissipation at 1.0f as diffusion should dissipate!)
-    newX = vec4(Dissipation *newU.xyz, 1.0);
+    newX = vec4(Dissipation * newU.xyz, 1.0);
   }
 }
 
