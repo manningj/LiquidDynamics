@@ -16,27 +16,27 @@
 //--- initShaders ---
 // Initializes shaders and loads them into the shaders struct passed in as a parameter
 void initShaders(Shaders* shaders) {
-	std::cout << "->-> init shaders started\n";
+	std::cout << "->-> init shaders started.\n";
 	shaders->drawTexture = InitShader("vshader.glsl", "drawTexture.glsl");
-		std::cout << "->-> init drawTexture complete\n";
+		std::cout << "->-> init drawTexture complete.\n";
 
 	shaders->advect = InitShader("vshader.glsl", "advect.glsl");
-		std::cout << "->-> init advect complete\n";
+		std::cout << "->-> init advect complete.\n";
 
 	shaders->divergence = InitShader("vshader.glsl", "divergence.glsl");
-		std::cout << "->-> init divergence complete\n";
+		std::cout << "->-> init divergence complete.\n";
 
 	shaders->jacobi = InitShader("vshader.glsl", "jacobi.glsl");
-		std::cout << "->-> init jacobi complete\n";
+		std::cout << "->-> init jacobi complete.\n";
 
 	shaders->subtractGradient = InitShader("vshader.glsl", "subtractGradient.glsl");
-		std::cout << "->-> init subtractGradient complete\n";
+		std::cout << "->-> init subtractGradient complete.\n";
 
 	shaders->addedForce = InitShader("vshader.glsl", "addedForce.glsl");
-		std::cout << "->-> init addedForce complete\n";
+		std::cout << "->-> init addedForce complete.\n";
 	
 	shaders->addedInk = InitShader("vshader.glsl", "addedInk.glsl");
-		std::cout << "->-> init addedInk complete\n";
+		std::cout << "->-> init addedInk complete.\n";
 }
 
 //----------------------------------------------------------------------------

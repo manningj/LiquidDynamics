@@ -153,7 +153,7 @@ void init()
    glEnable(GL_DEPTH_TEST);
 
    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
-   printf("Initialization Complete\n");
+   printf("Initialization Complete.\n");
    printInstructions();
 }
 
@@ -242,6 +242,7 @@ void keyboard(unsigned char key, int x, int y)
       inkDis = inkDissipation;
       inkRadius = 25.0f;
       forceRadius = 500.0f;
+      selectedColor = 0;
       clearField(Velocity.foo, 0.0);
       clearField(Ink.foo, 0.0);
       printf("Settings reset.\n");
@@ -373,7 +374,7 @@ void update(void)
 // Called on window resize
 void reshape(int width, int height)
 {
-   printf("Viewport set to %d, %d\n", windowWidth, windowHeight);
+   printf("Viewport set to %d, %d.\n", windowWidth, windowHeight);
    glViewport(0, 0, windowWidth, windowHeight);
    
    // Set the orthoprojection matrix
@@ -493,25 +494,25 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon){
 //--- initFields ---
 // Initializes all the fields needed for calculations or to display
 void initFields(){
-      std::cout << "-> init fields started" << "\n";
+      std::cout << "-> init fields started." << "\n";
 
    Velocity = createPair(fieldWidth, fieldHeight);
-      std::cout << "-> init Velocity complete"<< "\n";
+      std::cout << "-> init Velocity complete."<< "\n";
    clearField(Velocity.foo, 0.0);
 
    Pressure = createPair(fieldWidth, fieldHeight);
-      std::cout << "-> init Pressure complete"<< "\n";
+      std::cout << "-> init Pressure complete."<< "\n";
       clearField(Pressure.foo, 0.2);
 
    Ink = createPair(fieldWidth, fieldHeight);
-      std::cout << "-> init Ink complete"<< "\n";
+      std::cout << "-> init Ink complete."<< "\n";
       clearField(Ink.foo, 0.0);
 
    Divergence = createField(fieldWidth, fieldHeight);
-      std::cout << "-> init Divergence complete"<< "\n";
+      std::cout << "-> init Divergence complete."<< "\n";
 
    initShaders(shaders);
-      std::cout << "-> init shaders complete"<< "\n";
+      std::cout << "-> init shaders complete."<< "\n";
 }
 
 //----------------------------------------------------------------------------
