@@ -19,12 +19,12 @@ void main()
 {
   // check if we're a boundary, if so, just get to zero velocity
   if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
-    out_colour = vec4(0.0,0.0,0.0, 1);
+    out_colour = vec4(0.0,0.0,0.0,1.0);
   } else {
     // Grab the current velocity
     vec2 curr = texture(Sampler, gl_FragCoord.xy*Scale).rg;
 
-    // Calculate the new velocity caused from forces
+    // Calculate the new velocity caused from forces using equation from GPU Gems
     float exp = (pow(gl_FragCoord.x - ImpulsePosition.x,2) + pow(gl_FragCoord.y - ImpulsePosition.y,2))/ImpulseRadius;
     vec2 added = NewForce * pow(dt, exp);
 

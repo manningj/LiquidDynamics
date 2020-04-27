@@ -31,7 +31,7 @@ void main(){
     if (!isBoundary(fragCoord.x, fragCoord.y)) {
         // Get left, right, bottom, top samples.
         vec4 top = texelFetchOffset(x, fragCoord, 0, ivec2(0, 1));
-        vec4 bot = texelFetchOffset(x, fragCoord, 0, ivec2(0, -1));
+        vec4 bottom = texelFetchOffset(x, fragCoord, 0, ivec2(0, -1));
         vec4 right = texelFetchOffset(x, fragCoord, 0, ivec2(1, 0));
         vec4 left = texelFetchOffset(x, fragCoord, 0, ivec2(-1, 0));
     
@@ -48,7 +48,7 @@ void main(){
             top = center; 
         }
         if(isBoundary(fragCoord.x, fragCoord.y - 1.0)) { 
-            bot = center; }
+            bottom = center; }
         if(isBoundary(fragCoord.x + 1.0, fragCoord.y)) {
             right = center; 
         }
@@ -57,9 +57,9 @@ void main(){
         }
 
         // Get center of b sample
-        vec4 bC = texelFetch(b, fragCoord, 0);
+        vec4 bCenter = texelFetch(b, fragCoord, 0);
         
-        xNew = ((top + bot + right + left + (alpha * bC)) * rBeta );
+        xNew = ((top + bottom + right + left + (alpha * bCenter)) * rBeta);
     } else { // Boundary, set to zero velocity/pressure
         xNew = vec4(0.0,0.0,0.0,1.0);
     }

@@ -14,7 +14,7 @@ void main()
   out_colour = vec4(curr, 1);
 
   if (Velocity) {
-    out_colour = vec4(0.5 + curr/VelocityDisplayScale, 1);
+    out_colour = vec4(0.5 + curr/VelocityDisplayScale, 1.0);
   } else {
     out_colour = vec4(curr, 1);
   }

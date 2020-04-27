@@ -9,6 +9,7 @@ uniform float Dissipation; // diffusion value
 
 uniform sampler2D veloTex; // velocity texture
 uniform sampler2D posTex; // position texture.
+
 // To find if we are interior or are a boundary
 uniform vec2 InteriorRangeMin;
 uniform vec2 InteriorRangeMax;
