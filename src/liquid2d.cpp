@@ -14,6 +14,8 @@
 //            Q or escape key to exit program
 //            0 to 9 keys will select the current color to add to the fluid (see color reference below)
 //            Space bar to swap between viewing velocity field (u) or color/ink field
+//            Up/Right arrow keys to increase advection speed
+//            Down/Left arrow keys to decrease advection speed
 //            A key to reset the program to initial state
 //            W key to increase viscosity
 //            S key to decrease viscosity
@@ -237,8 +239,8 @@ void keyboard(unsigned char key, int x, int y)
       viscosity = 100.0f;
       velocityScale = 5.0f;
       inkStrength = 0.25f;
-      inkRadius = 25.0f;
       inkDis = inkDissipation;
+      inkRadius = 25.0f;
       forceRadius = 500.0f;
       clearField(Velocity.foo, 0.0);
       clearField(Ink.foo, 0.0);
