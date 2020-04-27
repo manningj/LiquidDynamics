@@ -25,12 +25,10 @@ uniform sampler2D b; // b vector, Ax = b
 bool isBoundary(float x, float y);
 
 void main(){
-    
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
 
     // Check if current fragment is a boundary
     if (!isBoundary(fragCoord.x, fragCoord.y)) {
-
         // Get left, right, bottom, top samples.
         vec4 top = texelFetchOffset(x, fragCoord, 0, ivec2(0, 1));
         vec4 bot = texelFetchOffset(x, fragCoord, 0, ivec2(0, -1));
@@ -41,7 +39,7 @@ void main(){
         
         // If any of the surrounding cells are a boundary, we want to use the center for velocity/pressure.
         // Negative center velocity for velocity, positive center pressure for pressure.
-        if(Velocity){
+        if(Velocity) {
             vec4 centerV = vec4(-center.rgb, 1.0);  // Set to -u
         }
 
@@ -60,24 +58,10 @@ void main(){
 
         // Get center of b sample
         vec4 bC = texelFetch(b, fragCoord, 0);
-        // if (Velocity) {
-            xNew = ((top + bot + right + left + (alpha * bC)) * rBeta );
-        // } else {
-        //     // Just use x coordinates with pressure
-        //     // This is separate just to make sure no other fields are altered
-        //     float outX = (top.x + bot.x + right.x  + left.x + (alpha * bC.x) * rBeta);
-            
-        //     xNew = vec4(outX, 0.0, 0.0, 1.0);
-        //     // if (outX>1 || xNew <-1) {
-        //     //     xNew = vec4(1.0, 1.0, 1.0, 1.0);
-        //     // }
-        // }
+        
+        xNew = ((top + bot + right + left + (alpha * bC)) * rBeta );
     } else { // Boundary, set to zero velocity/pressure
-        if(Velocity){
-            xNew = vec4(0.0,0.0,0.,1.0);
-        } else {
-            xNew = vec4(0.0,0.0,0.0,1.0);
-        }
+        xNew = vec4(0.0,0.0,0.0,1.0);
     }
  
 

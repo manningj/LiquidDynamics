@@ -13,7 +13,6 @@ uniform vec2 InteriorRangeMax;
 bool isBoundary(float x, float y);
 
 void main(){
-
     ivec2 fragCoord = ivec2 (gl_FragCoord.xy);
 
     // Check if current fragment is a boundary

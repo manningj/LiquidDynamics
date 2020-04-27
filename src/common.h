@@ -24,7 +24,7 @@
 #define windowHeight 640
 #define fieldWidth windowWidth
 #define fieldHeight windowHeight
-#define inkDissipation 0.98f
+#define inkDissipation 0.99f
 #define interiorRangeMinX 1
 #define interiorRangeMinY 1
 // If we have 640 pixel width starting at 0, then we want to 638
@@ -52,6 +52,7 @@ extern void init(void);
 extern void update(void);
 extern void display(void);
 extern void keyboard(unsigned char key, int x, int y);
+extern void keyboardSpecial(int key, int x, int y);
 extern void mouse(int button, int state, int x, int y);
 extern void mouseDrag(int x, int y);
 extern void reshape(int width, int height);

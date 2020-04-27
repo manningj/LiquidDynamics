@@ -57,7 +57,6 @@ bool cmpf(GLfloat a, GLfloat b, GLfloat epsilon = .0005f);
 //-------------------------------------------------------------------
 // Constants and variables
 const GLfloat LEFT = -1.0f;
-
 const GLfloat RIGHT = 1.0f;
 const GLfloat TOP = 1.0f;
 const GLfloat BOTTOM = -1.0f;
@@ -81,6 +80,7 @@ Pair Velocity, Pressure, Ink;
 Field Divergence;
 
 bool showVelocity = false;
+const float VELOCITY_DISPLAY_SCALE = 30.0f; // Scale down velocity to see better
 
 // Color settings when adding ink/color
 float inkDis = inkDissipation;
@@ -101,7 +101,7 @@ float inkStrength = 0.25;
 int selectedColor = 0;
 
 // Velocity settings when adding force
-const float VELOCITY_SCALE = 30.0f; // Lower number increases intensity of force
+float velocityScale = 5.0f; // Higher number increases intensity of force
 float veloDis = 1.0f;
 float forceRadius = 500.0f; // Affects radius of sqrt this value
 
@@ -177,10 +177,10 @@ void display(void)
    // Set uniforms
    GLint scale = glGetUniformLocation(shaderHandle, "Scale");
    GLuint isVelo = glGetUniformLocation(shaderHandle, "Velocity");
-   GLuint velocityScale = glGetUniformLocation(shaderHandle, "VelocityScale");
+   GLuint velocityDisplayScale = glGetUniformLocation(shaderHandle, "VelocityDisplayScale");
    glUniform2f(scale, 1.0f / (windowWidth), 1.0f / (windowHeight));
    glUniform1i(isVelo, showVelocity);
-   glUniform1f(velocityScale, VELOCITY_SCALE);
+   glUniform1f(velocityDisplayScale, VELOCITY_DISPLAY_SCALE);
 
    // Bind selected texture and draw
    glActiveTexture(GL_TEXTURE0);
@@ -188,8 +188,9 @@ void display(void)
    if (showVelocity) {
       glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
    } else {
-      glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
-      // glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
+      glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
+      // Here in case we want to uncomment and instead view pressure
+      // glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
    }
    
    // Draw a quad on whole screen to display texture
@@ -209,12 +210,12 @@ void keyboard(unsigned char key, int x, int y)
 {
    switch (key)
    {
-   case 033: // Escape Key
+   case 033: // Escape key
    case 'q':
    case 'Q':
       exit(EXIT_SUCCESS);
       break;
-   case ' ': //spacebar
+   case ' ': // Spacebar
       showVelocity = !showVelocity;
       printf("Changing views between velocity and ink.\n");
       break;
@@ -232,21 +233,26 @@ void keyboard(unsigned char key, int x, int y)
       break;
    case 'a':
       showVelocity = false;
-      viscosity = 0.7f;
-      inkDis = inkDissipation;
+      viscosity = 100.0f;
+      velocityScale = 5.0f;
       inkStrength = 0.25f;
       inkRadius = 25.0f;
+      inkDis = inkDissipation;
       forceRadius = 500.0f;
       clearField(Velocity.foo, 0.0);
       clearField(Ink.foo, 0.0);
       printf("Settings reset.\n");
       break;
    case 'w':
-      viscosity += 0.1;
+      if (viscosity < 0.5) {
+         viscosity = 0.5;
+      } else {
+         viscosity += 0.5;
+      }
       printf("Viscosity Coefficient: %f\n", viscosity);
       break;
    case 's':
-      viscosity = glm::max(0.1, viscosity - 0.1);
+      viscosity = glm::max(0.1, viscosity - 0.5);
       printf("Viscosity Coefficient: %f\n", viscosity);
       break;
    case 'e':
@@ -258,7 +264,7 @@ void keyboard(unsigned char key, int x, int y)
       printf("Ink Strength: %f\n", inkStrength);
       break;
    case 'r':
-      inkDis += 0.01;
+      inkDis = glm::min(1.0, inkDis + 0.01);
       printf("Ink Dissipation: %f\n", inkDis);
       break;
    case 'f':
@@ -299,6 +305,26 @@ void keyboard(unsigned char key, int x, int y)
       }
       break;
    }
+}
+
+//----------------------------------------------------------------------------
+//--- keyboardSpecial ---
+// GLUT calls this when special key is pressed, like arrow keys.
+void keyboardSpecial(int key, int x, int y) {
+   switch (key)
+   {
+      case GLUT_KEY_UP: // Up arrow key
+      case GLUT_KEY_RIGHT: // Right arrow key
+         velocityScale += 1.0;
+         printf("Advection speed: %f\n", velocityScale);
+         break;
+      case GLUT_KEY_DOWN: // Down arrow key
+      case GLUT_KEY_LEFT: // Left arrow key
+         velocityScale -= 1.0;
+         printf("Advection speed: %f\n", velocityScale);
+         break;
+    }
+
 }
 
 //----------------------------------------------------------------------------
@@ -574,8 +600,8 @@ void runtime(){
    }
 
    // // Subtract the gradient from velocity to get final velocity field
-   // subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
-   // swapField(&Velocity);
+   subtractGradient(Velocity.foo, Pressure.foo, Velocity.bar);
+   swapField(&Velocity);
 }
 
 //----------------------------------------------------------------------------
@@ -601,7 +627,7 @@ void addedForce(Field velocity, Field destination) {
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
    // Set uniform variables
-   glUniform2f(newForce, ((float)verticesLine[1].x - (float)verticesLine[0].x), ((float)verticesLine[1].y - (float)verticesLine[0].y));
+   glUniform2f(newForce, (float)verticesLine[1].x - (float)verticesLine[0].x, (float)verticesLine[1].y - (float)verticesLine[0].y);
    glUniform1f(timeStep, dt);
    glUniform1f(impulseRadius, forceRadius);
    glUniform2f(impulsePosition, verticesLine[0].x, verticesLine[0].y);
@@ -634,7 +660,7 @@ void advect(Field velocity, Field position, Field destination, float dissipation
 
    // Get references to uniforms
    GLuint scale = glGetUniformLocation(shaderHandle, "Scale");
-   GLuint fieldSize = glGetUniformLocation(shaderHandle, "FieldSize");
+   GLuint velocityScalePtr = glGetUniformLocation(shaderHandle, "VelocityScale");
    GLuint timeStep = glGetUniformLocation(shaderHandle, "TimeStep");
    GLuint dissipation = glGetUniformLocation(shaderHandle, "Dissipation");
    GLuint isInk = glGetUniformLocation(shaderHandle, "IsInk");
@@ -644,7 +670,7 @@ void advect(Field velocity, Field position, Field destination, float dissipation
 
    // Set uniform variables
    glUniform2f(scale, 1.0f / (fieldWidth), 1.0f / (fieldHeight)); // rdx is 1/dx and dy?
-   glUniform2f(fieldSize, fieldWidth,fieldHeight);
+   glUniform1f(velocityScalePtr, velocityScale);
    glUniform1f(timeStep, dt);
    glUniform1f(dissipation, dissipationVal);
    glUniform1i(isInk, advectingInk);
@@ -777,7 +803,6 @@ void divergence(Field velocityField, Field destination){
 
    // Get references to uniforms
    GLuint halfrdx = glGetUniformLocation(shaderHandle, "Halfrdx");
-   GLuint velocityScale = glGetUniformLocation(shaderHandle, "VelocityScale");
    GLuint interiorRangeMin = glGetUniformLocation(shaderHandle, "InteriorRangeMin");
    GLuint interiorRangeMax = glGetUniformLocation(shaderHandle, "InteriorRangeMax");
 
@@ -786,7 +811,6 @@ void divergence(Field velocityField, Field destination){
    // Textbook wording makes it sound like above but it's only 0.00078125 at width of 640
    // 0.5/cellSize gives a more reasonable value
    glUniform1f(halfrdx, 0.5f/(float)cellSize);
-   glUniform1f(velocityScale, VELOCITY_SCALE);
    glUniform2f(interiorRangeMin, interiorRangeMinX, interiorRangeMinY);
    glUniform2f(interiorRangeMax, interiorRangeMaxX, interiorRangeMaxY);
 

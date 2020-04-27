@@ -3,10 +3,9 @@
 out vec4 newX; //the advected position
 
 uniform vec2 Scale; // 1/field width, 1/field height
-uniform vec2 FieldSize; // fieldWidth, fieldHeight
+uniform float VelocityScale;
 uniform float TimeStep; // dt
 uniform float Dissipation; // diffusion value
-uniform bool IsInk;
 
 uniform sampler2D veloTex; // velocity texture
 uniform sampler2D posTex; // position texture.
@@ -28,17 +27,13 @@ void main()
 {
   // Check if we're a boundary, if so, just get to zero velocity/ink
   if ((gl_FragCoord.x > InteriorRangeMax.x || gl_FragCoord.x < InteriorRangeMin.x) || (gl_FragCoord.y > InteriorRangeMax.y || gl_FragCoord.y < InteriorRangeMin.y)) { 
-    if (IsInk) {
-      newX = vec4(0.0,0.0,0.0, 1);
-    } else {
-      newX = vec4(0.0,0.0,0.0, 1);
-    }
+    newX = vec4(0.0,0.0,0.0, 1);
   } else {
     vec2 fragCoord = gl_FragCoord.xy; // gets the window coord of the fragment
 
     // This gets the samples the value of velo tex at the window coordinates of the fragment.
     // u = the velocity of this fragment(or cell)
-    vec2 u = (texture(veloTex, Scale * fragCoord).xy) * 10.0f;; 
+    vec2 u = (texture(veloTex, Scale * fragCoord).xy) * VelocityScale; 
 
     // Go to previous position.
     vec2 pos = (fragCoord - TimeStep * u ) * Scale;
