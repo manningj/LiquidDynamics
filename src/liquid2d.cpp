@@ -189,8 +189,9 @@ void display(void)
       glBindTexture(GL_TEXTURE_2D, Velocity.foo.texture);
    } else {
       glBindTexture(GL_TEXTURE_2D, Ink.foo.texture);
-      // Here in case we want to uncomment and instead view pressure
+      // Here in case we want to uncomment and instead view pressure or divergence
       // glBindTexture(GL_TEXTURE_2D, Pressure.foo.texture);
+      // glBindTexture(GL_TEXTURE_2D, Divergence.texture);
    }
    
    // Draw a quad on whole screen to display texture

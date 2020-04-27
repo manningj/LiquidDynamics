@@ -24,7 +24,7 @@ void main(){
 
         // Calculate inverse velocity in case one of the neighbors is a boundary
         vec4 center = texelFetch(Velocity, fragCoord, 0);
-        center = vec4(-center.rgb, 1.0);
+        center = vec4(-center.xyz, 1.0);
 
         // Check if boundary, if so set to inverse center
         if(isBoundary(fragCoord.x, fragCoord.y+1.0)) { 

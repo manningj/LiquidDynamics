@@ -40,7 +40,7 @@ void main(){
         // If any of the surrounding cells are a boundary, we want to use the center for velocity/pressure.
         // Negative center velocity for velocity, positive center pressure for pressure.
         if (Velocity) {
-            vec4 center = vec4(-center.rgb, 1.0);  // Set to -u
+            vec4 center = vec4(-center.xyz, 1.0);  // Set to -u
         }
 
         // Check if boundary, if so set to center (or inverse center if velocity)
